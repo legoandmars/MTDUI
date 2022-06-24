@@ -1,0 +1,20 @@
+﻿using flanne.Core;
+using HarmonyLib;
+using MTDUI.Controllers;
+
+namespace MTDUI.HarmonyPatches.Patches
+{
+    [HarmonyPatch(typeof(PauseState))]
+    [HarmonyPatch("Exit", MethodType.Normal)]
+    internal class ModOptionsPauseButtonAddPatch
+    {
+        private static void Postfix(PauseState __instance)
+        {
+            if (ModOptionsMenuController.PauseModOptionsButton != null)
+            {
+                // convert to removelistener?
+                ModOptionsMenuController.PauseModOptionsButton.onClick.RemoveAllListeners();
+            }
+        }
+    }
+}
