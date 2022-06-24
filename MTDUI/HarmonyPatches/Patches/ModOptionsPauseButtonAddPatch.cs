@@ -10,9 +10,9 @@ namespace MTDUI.HarmonyPatches.Patches
     [HarmonyPatch("Enter", MethodType.Normal)]
     internal class ModOptionsPauseButtonAddPatch
     {
-        private static void Postfix(PauseState __instance)
+        private static void Postfix(ref GameController ___owner)
         {
-            if (ModOptionsMenuController.GameController == null) ModOptionsMenuController.GameController = Traverse.Create(__instance).Field("owner").GetValue() as GameController;
+            if (ModOptionsMenuController.GameController == null) ModOptionsMenuController.GameController = ___owner;
 
             ModOptionsMenuController.CreateModOptionsButton(OptionsMenuType.PauseMenu);
             ModOptionsMenuController.CreateModOptionsPanel(OptionsMenuType.PauseMenu);

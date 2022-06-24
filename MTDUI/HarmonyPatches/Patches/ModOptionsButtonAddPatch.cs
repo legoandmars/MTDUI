@@ -10,11 +10,11 @@ namespace MTDUI.HarmonyPatches.Patches
     [HarmonyPatch("Enter", MethodType.Normal)]
     internal class ModOptionsButtonAddPatch
     {
-        private static void Postfix(TitleMainMenuState __instance)
+        private static void Postfix(ref TitleScreenController ___owner)
         {
             if(ModOptionsMenuController.TitleScreenController == null)
             {
-                ModOptionsMenuController.TitleScreenController = Traverse.Create(__instance).Field("owner").GetValue() as TitleScreenController;
+                ModOptionsMenuController.TitleScreenController = ___owner;
             }
 
             ModOptionsMenuController.CreateModOptionsButton(OptionsMenuType.MainMenu);
