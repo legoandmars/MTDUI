@@ -23,11 +23,15 @@ namespace MTDUI
                 // add to acceptable values for enum
                 foreach (var value in enumValues) if (!acceptableValues.Contains((T)value)) acceptableValues.Add((T)value);
             }
-            else if(entry.SettingType == typeof(int))
+            else if(entry.SettingType == typeof(int) || entry.SettingType != typeof(float))
             {
                 // really really need to do some better stuff here, but I don't care for now
                 // if they're not providing anything, all that should be provided is the default value. no changin!
                 if(!acceptableValues.Contains((T)entryBase.DefaultValue)) acceptableValues.Add((T)entryBase.DefaultValue);
+            }
+            else if(entry.SettingType == typeof(bool))
+            {
+                foreach (var value in new List<object> { false, true }) if (!acceptableValues.Contains((T)value)) acceptableValues.Add((T)value);
             }
 
             ModOptionsMenuController.ConfigEntries.Add(new ModConfigEntry(entryBase, acceptableValues.Cast<object>().ToList()));

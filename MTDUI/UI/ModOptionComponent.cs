@@ -42,20 +42,30 @@ namespace MTDUI.UI
             if (_text != null && _modConfigEntry != null) _text.text = $"{_modConfigEntry.EntryConfigBase.Definition.Key}: {_modConfigEntry.EntryConfigBase.BoxedValue}";
         }
 
+        private void ChangeValue<T>(ModConfigEntry configEntry)
+        {
+            T currentValue = (T)configEntry.EntryConfigBase.BoxedValue;
+
+            int valueIndex = configEntry.AcceptableValues.FindIndex(x => ((T)x).Equals(currentValue));
+            if (valueIndex == -1) valueIndex = 0;
+
+            if (valueIndex + 1 < configEntry.AcceptableValues.Count) configEntry.EntryConfigBase.BoxedValue = configEntry.AcceptableValues[valueIndex + 1];
+            else configEntry.EntryConfigBase.BoxedValue = configEntry.AcceptableValues[0];
+        }
+
         private void OnClick()
         {
             try
             {
-                // this should work for both integers and enums because you can cast enums to integers
-                if (_modConfigEntry != null && (_modConfigEntry.EntryConfigBase.SettingType == typeof(int) || _modConfigEntry.EntryConfigBase.SettingType.IsEnum))
-                {
-                    var currentValue = (int)_modConfigEntry.EntryConfigBase.BoxedValue;
-                    var valueIndex = _modConfigEntry.AcceptableValues.FindIndex(x => (int)x == currentValue);
-                    if (valueIndex == -1) valueIndex = 0;
+                if (_modConfigEntry == null) return;
 
-                    if (valueIndex + 1 < _modConfigEntry.AcceptableValues.Count) _modConfigEntry.EntryConfigBase.BoxedValue = _modConfigEntry.AcceptableValues[valueIndex + 1];
-                    else _modConfigEntry.EntryConfigBase.BoxedValue = _modConfigEntry.AcceptableValues[0];
-                }
+                var settingType = _modConfigEntry.EntryConfigBase.SettingType;
+
+                // this should work for both integers and enums because you can cast enums to integers
+                // i think the ChangeValue method *should* work generically but I need to do more testing to make sure nothing breaks
+                if (settingType == typeof(int) || settingType.IsEnum) ChangeValue<int>(_modConfigEntry);
+                else if (settingType == typeof(bool)) ChangeValue<bool>(_modConfigEntry);
+                else if (settingType == typeof(float)) ChangeValue<float>(_modConfigEntry);
 
                 SetText();
             }
