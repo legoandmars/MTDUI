@@ -11,6 +11,8 @@ namespace MTDUI.UI
 {
     public class ModOptionComponent : MonoBehaviour
     {
+        public string Mod = "";
+
         private Button? _button = null;
         private TMP_Text? _text = null;
         private ModConfigEntry? _modConfigEntry = null;
@@ -29,9 +31,10 @@ namespace MTDUI.UI
             if (_button != null) _button.onClick.RemoveAllListeners();
         }
 
-        public void Initialize(ModConfigEntry modConfigEntry)
+        public void Initialize(ModConfigEntry modConfigEntry, string mod)
         {
             _modConfigEntry = modConfigEntry;
+            Mod = mod;
 
             SetText();
         }

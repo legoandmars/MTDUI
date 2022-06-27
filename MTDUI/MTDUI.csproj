@@ -80,6 +80,8 @@
     <Compile Include="Data\ModConfigEntry.cs" />
     <Compile Include="Data\ModOptionsMenuState.cs" />
     <Compile Include="Data\ModOptionsPauseState.cs" />
+    <Compile Include="Data\ModOptionsPauseSubmenuState.cs" />
+    <Compile Include="Data\ModOptionsSubmenuState.cs" />
     <Compile Include="Data\OptionsMenuType.cs" />
     <Compile Include="HarmonyPatches\MTDUIPatches.cs" />
     <Compile Include="HarmonyPatches\Patches\LocalizerInjectionPatch.cs" />

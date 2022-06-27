@@ -1,5 +1,6 @@
 ﻿#nullable enable
 
+using BepInEx.Configuration;
 using flanne;
 using flanne.Core;
 using flanne.TitleScreen;
@@ -8,8 +9,11 @@ using HarmonyLib;
 using MTDUI.Data;
 using MTDUI.UI;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
+using TMPro;
 
 namespace MTDUI.Controllers
 {
@@ -17,6 +21,8 @@ namespace MTDUI.Controllers
     {
         // things are a bit repetitive here
         public static List<ModConfigEntry> ConfigEntries = new List<ModConfigEntry>();
+        public static Dictionary<string, List<ModConfigEntry>> SortedConfigEntries = new Dictionary<string, List<ModConfigEntry>>();
+
         public static Button? ModOptionsButton = null;
         public static Button? ModOptionsBackButton = null;
         public static Panel? ModOptionsPanel = null;
@@ -27,8 +33,13 @@ namespace MTDUI.Controllers
         public static Button? PauseModOptionsBackButton = null;
         public static Panel? PauseModOptionsPanel = null;
 
-        public static GameObject? ButtonTemplate = null;
-        public static GameObject? PauseButtonTemplate = null;
+        public static Panel? ModOptionsSubPanel = null;
+        public static Button? ModOptionsSubMenuBackButton = null;
+
+        public static Panel? PauseModOptionsSubPanel = null;
+        public static Button? PauseModOptionsSubMenuBackButton = null;
+
+        public static List<ModOptionComponent> ModOptionComponents = new List<ModOptionComponent>();
 
         public static void OnModOptionsClick()
         {
@@ -40,16 +51,52 @@ namespace MTDUI.Controllers
             if (GameController != null) GameController.ChangeState<ModOptionsPauseState>();
         }
 
-        public static void AddButtonFromConfigEntry(ModConfigEntry configEntry, OptionsMenuType menuType)
+        public static void OnModClick(string modName)
         {
-            var template = menuType == OptionsMenuType.MainMenu ? ButtonTemplate : PauseButtonTemplate;
+            ModOptionsSubmenuState.CurrentSubmenu = modName;
+            if (TitleScreenController != null) TitleScreenController.ChangeState<ModOptionsSubmenuState>();
+        }
+
+        public static void OnPauseModClick(string modName)
+        {
+            ModOptionsPauseSubmenuState.CurrentSubmenu = modName;
+            if (GameController != null) GameController.ChangeState<ModOptionsPauseSubmenuState>();
+        }
+
+        public static ModOptionComponent? AddButtonFromConfigEntry(ModConfigEntry configEntry, OptionsMenuType menuType, string mod)
+        {
+            var template = (menuType == OptionsMenuType.MainMenu ? ModOptionsSubMenuBackButton : PauseModOptionsSubMenuBackButton)?.gameObject;
             if (template != null)
             {
                 var newButton = UnityEngine.Object.Instantiate(template, template.transform.parent);
+                newButton.GetComponentInChildren<TextLocalizerUI>().enabled = false;
+
                 var optionComponent = newButton.AddComponent<ModOptionComponent>();
-                optionComponent.Initialize(configEntry);
+                optionComponent.Initialize(configEntry, mod);
+
+                newButton.SetActive(false);
+
+                return optionComponent;
+            }
+            return null;
+        }
+
+        public static void AddButtonFromModName(OptionsMenuType menuType, string mod)
+        {
+            var template = (menuType == OptionsMenuType.MainMenu ? ModOptionsBackButton : PauseModOptionsBackButton)?.gameObject;
+            if (template != null)
+            {
+                var newButton = Object.Instantiate(template, template.transform.parent);
+
+                newButton.GetComponent<Button>().onClick.AddListener(
+                    menuType == OptionsMenuType.MainMenu ? 
+                    new UnityAction(() => { OnModClick(mod); }) :
+                    new UnityAction(() => { OnPauseModClick(mod);})
+                );
 
                 newButton.SetActive(true);
+                newButton.GetComponentInChildren<TextLocalizerUI>().enabled = false;
+                newButton.GetComponentInChildren<TextMeshProUGUI>().text = mod;
             }
         }
 
@@ -92,15 +139,7 @@ namespace MTDUI.Controllers
                             if (menuType == OptionsMenuType.MainMenu) ModOptionsBackButton = button;
                             else PauseModOptionsBackButton = button;
                         }
-                        else if (button.name == "SoundVolume")
-                        {
-                            // a normal template that shouldn't change much on UI changes
-                            button.gameObject.SetActive(false);
-
-                            if (menuType == OptionsMenuType.MainMenu) ButtonTemplate = button.gameObject;
-                            else PauseButtonTemplate = button.gameObject;
-                        }
-                        else button.gameObject.SetActive(false);
+                        else button.gameObject.SetActive(false); // should be destroyed
                     }
 
                     UnityEngine.Object.DestroyImmediate(newPanel.GetComponent<OptionsSetter>());
@@ -108,10 +147,45 @@ namespace MTDUI.Controllers
                     if (menuType == OptionsMenuType.MainMenu) ModOptionsPanel = newPanel.GetComponent<Panel>();
                     else PauseModOptionsPanel = newPanel.GetComponent<Panel>();
 
-                    // now properly add the options that already exist by this point
-                    foreach (var option in ConfigEntries)
+                    // make submenu 
+                    var subPanel = Object.Instantiate(newPanel, newPanel.transform.parent);
+                    if (menuType == OptionsMenuType.MainMenu) ModOptionsSubPanel = subPanel.GetComponent<Panel>();
+                    else PauseModOptionsSubPanel = subPanel.GetComponent<Panel>();
+
+                    if (menuType == OptionsMenuType.MainMenu) ModOptionsSubMenuBackButton = subPanel.transform.Find("Back").GetComponent<Button>();
+                    else PauseModOptionsSubMenuBackButton = subPanel.transform.Find("Back").GetComponent<Button>();
+
+                    // get all config files so we can make per-mod submenus
+
+                    foreach (var component in ModOptionComponents)
                     {
-                        AddButtonFromConfigEntry(option, menuType);
+                        if (component != null)
+                        {
+                            component.gameObject.SetActive(false);
+                            Object.Destroy(component);
+                        }
+                    }
+                    ModOptionComponents = new List<ModOptionComponent>();
+
+                    foreach (var modConfigEntries in SortedConfigEntries)
+                    {
+                        var name = modConfigEntries.Key;
+                        foreach(var configEntry in modConfigEntries.Value)
+                        {
+                            // create button for each entry
+                            var button = AddButtonFromConfigEntry(configEntry, menuType, name);
+                            if(button != null)
+                            {
+                                ModOptionComponents.Add(button);
+                                button.gameObject.SetActive(false);
+                            }
+                        }
+                        // submenu back button should always be last
+                        var submenuBackbutton = menuType == OptionsMenuType.MainMenu ? ModOptionsSubMenuBackButton : PauseModOptionsSubMenuBackButton;
+                        if (submenuBackbutton != null) submenuBackbutton.transform.SetAsLastSibling(); // back button should always be at the bottom
+
+                        // create buttons for each mod
+                        AddButtonFromModName(menuType, name);
                     }
 
                     var backButton = menuType == OptionsMenuType.MainMenu ? ModOptionsBackButton : PauseModOptionsBackButton;
@@ -128,17 +202,15 @@ namespace MTDUI.Controllers
                         }
 
                         var optionsMenuRect = PauseModOptionsPanel?.GetComponent<RectTransform>();
-                        if(optionsMenuRect != null)
+                        if (optionsMenuRect != null)
                         {
                             // assuming 6 options. this could break on future updates. this really should be dynamically checked
                             var currentY = optionsMenuRect.sizeDelta.y;
-                            var entryCount = ConfigEntries.Count + 1;
+                            var entryCount = SortedConfigEntries.Count + 1;
                             if (entryCount < 6) currentY -= (6 - entryCount) * 24;
                             else if(entryCount > 6) currentY += (entryCount - 6) * 24;
 
                             optionsMenuRect.sizeDelta = new Vector2(300, currentY);
-
-                            // todo: dynamic vertical scaling based on text height
                         }
                     }
                 }
