@@ -7,7 +7,7 @@ namespace MTDUI.Data
 	public class ModOptionsPauseSubmenuState : GameState
 	{
 		public static string CurrentSubmenu = "";
-		private static RectTransform rect;
+		private static RectTransform? rect;
 		public void OnClick()
 		{
 			owner.ChangeState<ModOptionsPauseState>();
