@@ -15,8 +15,8 @@ MTDUI is primarily meant to be used in conjunction with the BepInEx configuratio
 | ------------- | ------------- |
 | Enum  | ✅  |
 | Int  | ✅  |
-| Float  | ❌  |
-| Bool  | ❌  |
+| Float  | ✅ |
+| Bool  | ✅  |
 | String  | ❌  |
 | Others?  | ❌  |
 
