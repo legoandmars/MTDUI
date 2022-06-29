@@ -12,11 +12,8 @@ namespace MTDUI.HarmonyPatches.Patches
     {
         private static void Postfix(ref TitleScreenController ___owner)
         {
-            if(ModOptionsMenuController.TitleScreenController == null)
-            {
-                ModOptionsMenuController.TitleScreenController = ___owner;
-            }
-
+            if(ModOptionsMenuController.TitleScreenController == null) ModOptionsMenuController.TitleScreenController = ___owner;
+            
             ModOptionsMenuController.CreateModOptionsButton(OptionsMenuType.MainMenu);
             ModOptionsMenuController.CreateModOptionsPanel(OptionsMenuType.MainMenu);
 
