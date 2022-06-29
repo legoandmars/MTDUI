@@ -32,6 +32,7 @@ var customFile = new ConfigFile(Path.Combine(Paths.ConfigPath, "GameSpeed.cfg"),
 var gameSpeed = customFile.Bind("General", "Game Speed", 1, "The speed at which the game runs.");
 
 // Register the config option with MTDUI's in-game mod settings
+// "Example" is the section in which the config will be shown
 // 1, 2, 3, 4, 5, and 10 are valid options that can be selected
 // This option will only show on the main title screen Mod Options panel
 ModOptions.Register("Example", gameSpeed, new List<int>(){ 1, 2, 3, 4, 5, 10 });
