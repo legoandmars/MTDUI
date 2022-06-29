@@ -165,16 +165,19 @@ namespace MTDUI.Controllers
                 }
             }
             ModOptionComponents = new List<ModOptionComponent>();
+            var entryCount = 1;
 
             foreach (var modConfigEntries in SortedConfigEntries)
             {
                 var name = modConfigEntries.Key;
+                bool hasConfigEntries = false;
                 foreach (var configEntry in modConfigEntries.Value)
                 {
                     // create button for each entry
                     var button = AddButtonFromConfigEntry(configEntry, menuType, name);
                     if (button != null) // Prevent button that should not be in pause menu
                     {
+                        hasConfigEntries = true;
                         ModOptionComponents.Add(button);
                         button.gameObject.SetActive(false);
                     }
@@ -183,8 +186,12 @@ namespace MTDUI.Controllers
                 var submenuBackbutton = menuType == OptionsMenuType.MainMenu ? ModOptionsSubMenuBackButton : PauseModOptionsSubMenuBackButton;
                 if (submenuBackbutton != null) submenuBackbutton.transform.SetAsLastSibling(); // back button should always be at the bottom
 
-                // create buttons for each mod
-                AddButtonFromModName(menuType, name);
+                // create buttons for each mod, if necessary
+                if (hasConfigEntries)
+                {
+                    AddButtonFromModName(menuType, name);
+                    entryCount++;
+                }
             }
 
             var backButton = menuType == OptionsMenuType.MainMenu ? ModOptionsBackButton : PauseModOptionsBackButton;
@@ -206,9 +213,8 @@ namespace MTDUI.Controllers
             {
                 // assuming 6 options. this could break on future updates. this really should be dynamically checked
                 var currentY = optionsMenuRect.sizeDelta.y;
-                var entryCount = SortedConfigEntries.Count + 1;
-                if (entryCount < 6) currentY -= (6 - entryCount) * 24;
-                else if (entryCount > 6) currentY += (entryCount - 6) * 24;
+
+                currentY += (entryCount - 6) * 24;
 
                 optionsMenuRect.sizeDelta = new Vector2(300, currentY);
             }
