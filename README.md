@@ -1,5 +1,5 @@
 # MTDUI
-A simple UI library for 20 Minutes Till Dawn.
+A simple UI library for [20 Minutes Till Dawn](https://store.steampowered.com/app/1966900/20_Minutes_Till_Dawn/).
 
 ## Installation
 If your game isn't modded with BepinEx, DO THAT FIRST! Simply go to the [latest BepinEx release](https://github.com/BepInEx/BepInEx/releases) and extract BepinEx_x64_VERSION.zip directly into your game's folder, then run the game once to install BepinEx properly.
@@ -33,7 +33,16 @@ var gameSpeed = customFile.Bind("General", "Game Speed", 1, "The speed at which 
 
 // Register the config option with MTDUI's in-game mod settings
 // 1, 2, 3, 4, 5, and 10 are valid options that can be selected
-ModOptions.Register(gameSpeed, new List<int>(){ 1, 2, 3, 4, 5, 10 })
+// This option will only show on the main title screen Mod Options panel
+ModOptions.Register("Example", gameSpeed, new List<int>(){ 1, 2, 3, 4, 5, 10 });
+
+// If your config/patch support being change mid-run on its own
+// This option will be modifiable in the pause menu Mod Options panel
+ModOptions.Register("Example", gameSpeed, new List<int>(){ 1, 2, 3, 4, 5, 10 }, true);
+
+// If your config/patch support being change mid-run but you need some method to exectute upon change
+// A better registration method is the following
+ModOptions.RegisterWithPauseAction("Example", gameSpeed, new List<int>(){ 1, 2, 3, 4, 5, 10 }, GameSpeedPatch.ChangeSpeed);
 
 // gameSpeed should now be updated when changed in the ingame UI (or when the cfg file is manually modified)
 // Use gameSpeed.Value when you want to actually use the value
