@@ -6,6 +6,8 @@ namespace MTDUI.Data
 {
     public class ModConfigEntry
     {
+        public bool IsInPauseMenu { get; }
+
         public ConfigEntryBase EntryConfigBase { get; }
 
         // unused. this really needs to be expanded once proper sliders for ints and floats are added.
@@ -14,10 +16,11 @@ namespace MTDUI.Data
 
         public List<object> AcceptableValues { get; }
 
-        public ModConfigEntry(ConfigEntryBase entryConfigBase, List<object> acceptableValues)
+        public ModConfigEntry(ConfigEntryBase entryConfigBase, List<object> acceptableValues, bool isInPauseMenu = true)
         {
             EntryConfigBase = entryConfigBase;
             AcceptableValues = acceptableValues;
+            IsInPauseMenu = isInPauseMenu;
         }
     }
 }

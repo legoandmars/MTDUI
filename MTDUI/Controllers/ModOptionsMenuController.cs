@@ -1,6 +1,5 @@
 ﻿#nullable enable
 
-using BepInEx.Configuration;
 using flanne;
 using flanne.Core;
 using flanne.TitleScreen;
@@ -9,7 +8,6 @@ using HarmonyLib;
 using MTDUI.Data;
 using MTDUI.UI;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
@@ -67,6 +65,9 @@ namespace MTDUI.Controllers
 
         public static ModOptionComponent? AddButtonFromConfigEntry(ModConfigEntry configEntry, OptionsMenuType menuType, string mod)
         {
+            // Check if configEntry needs to be in pausemenu
+            if (menuType == OptionsMenuType.PauseMenu && !configEntry.IsInPauseMenu) return null;
+
             var template = (menuType == OptionsMenuType.MainMenu ? ModOptionsSubMenuBackButton : PauseModOptionsSubMenuBackButton)?.gameObject;
             if (template == null) return null; // Should never happed
 
@@ -172,7 +173,7 @@ namespace MTDUI.Controllers
                 {
                     // create button for each entry
                     var button = AddButtonFromConfigEntry(configEntry, menuType, name);
-                    if (button != null)
+                    if (button != null) // Prevent button that should not be in pause menu
                     {
                         ModOptionComponents.Add(button);
                         button.gameObject.SetActive(false);
