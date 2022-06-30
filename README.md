@@ -36,14 +36,12 @@ var gameSpeed = customFile.Bind("General", "Game Speed", 1, "The speed at which 
 // This option will only show on the main title screen Mod Options panel
 ModOptions.Register(gameSpeed, new List<int>(){ 1, 2, 3, 4, 5, 10 });
 
-// If your config/patch support being change mid-run on its own
+// If your config/patch support being change mid-run (using gameSpeed.SettingChanged EventHandler for instance)
 // This option will be modifiable in the every Mod Options panel
 // "Custom Mod Name" is the section in which the config will be shown, if not specified, the assemblyname is used
 ModOptions.Register(gameSpeed, new List<int>(){ 1, 2, 3, 4, 5, 10 }, MTDUI.ConfigEntryLocationType.Everywhere, "Custom Mod Name");
 
-// If your config/patch support being change mid-run but you need some method to exectute upon change
-// A better registration method is the following
-ModOptions.RegisterWithPauseAction(gameSpeed, GameSpeedPatch.ChangeSpeed, new List<int>(){ 1, 2, 3, 4, 5, 10 });
+// The acceptableValues list is filled automatically for bool and enum configEntries
 
 // gameSpeed should now be updated when changed in the ingame UI (or when the cfg file is manually modified)
 // Use gameSpeed.Value when you want to actually use the value
