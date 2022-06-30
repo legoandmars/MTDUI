@@ -61,11 +61,5 @@ namespace MTDUI
             if (!ModOptionsMenuController.SortedConfigEntries.ContainsKey(subMenuName)) ModOptionsMenuController.SortedConfigEntries.Add(subMenuName, new List<ModConfigEntry>());
             ModOptionsMenuController.SortedConfigEntries[subMenuName].Add(modConfigEntry);
         }
-
-        public static void RegisterWithPauseAction<T>(ConfigEntry<T> entry, Action changeMethod, List<T>? acceptableValues = null, string subMenuName = "")
-        {
-            ModOptionChangeIngamePatch.AddPatchActionToPause(changeMethod);
-            Register(entry, acceptableValues, ConfigEntryLocationType.Everywhere, subMenuName);
-        }
     }
 }
