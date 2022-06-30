@@ -6,7 +6,7 @@ namespace MTDUI.Data
 {
     public class ModConfigEntry
     {
-        public bool IsInPauseMenu { get; }
+        public ConfigEntryLocationType Location { get; }
 
         public ConfigEntryBase EntryConfigBase { get; }
 
@@ -16,11 +16,11 @@ namespace MTDUI.Data
 
         public List<object> AcceptableValues { get; }
 
-        public ModConfigEntry(ConfigEntryBase entryConfigBase, List<object> acceptableValues, bool isInPauseMenu = true)
+        public ModConfigEntry(ConfigEntryBase entryConfigBase, List<object> acceptableValues, ConfigEntryLocationType location)
         {
             EntryConfigBase = entryConfigBase;
             AcceptableValues = acceptableValues;
-            IsInPauseMenu = isInPauseMenu;
+            Location = location;
         }
     }
 }

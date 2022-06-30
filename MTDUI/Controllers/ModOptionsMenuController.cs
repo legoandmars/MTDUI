@@ -63,10 +63,18 @@ namespace MTDUI.Controllers
             if (GameController != null) GameController.ChangeState<ModOptionsPauseSubmenuState>();
         }
 
+        private static bool AreEntryAndMenuCompatible(OptionsMenuType menu, ConfigEntryLocationType location)
+        {
+            if (location == ConfigEntryLocationType.Everywhere) return true;
+            if (menu == OptionsMenuType.PauseMenu) return location == ConfigEntryLocationType.PauseOnly;
+            else return location == ConfigEntryLocationType.MainOnly;
+        }
+
+
         public static ModOptionComponent? AddButtonFromConfigEntry(ModConfigEntry configEntry, OptionsMenuType menuType, string mod)
         {
-            // Check if configEntry needs to be in pausemenu
-            if (menuType == OptionsMenuType.PauseMenu && !configEntry.IsInPauseMenu) return null;
+            // Check if configEntry needs to be implemented in the current menu
+            if (!AreEntryAndMenuCompatible(menuType, configEntry.Location)) return null;
 
             var template = (menuType == OptionsMenuType.MainMenu ? ModOptionsSubMenuBackButton : PauseModOptionsSubMenuBackButton)?.gameObject;
             if (template == null) return null; // Should never happed
@@ -146,7 +154,7 @@ namespace MTDUI.Controllers
             if (menuType == OptionsMenuType.MainMenu) ModOptionsPanel = newPanel.GetComponent<Panel>();
             else PauseModOptionsPanel = newPanel.GetComponent<Panel>();
 
-            // make submenu 
+            // make submenu
             var subPanel = Object.Instantiate(newPanel, newPanel.transform.parent);
             if (menuType == OptionsMenuType.MainMenu) ModOptionsSubPanel = subPanel.GetComponent<Panel>();
             else PauseModOptionsSubPanel = subPanel.GetComponent<Panel>();

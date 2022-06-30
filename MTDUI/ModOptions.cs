@@ -12,6 +12,13 @@ using UnityEngine;
 
 namespace MTDUI
 {
+    public enum ConfigEntryLocationType
+    {
+        Everywhere,
+        PauseOnly,
+        MainOnly
+    }
+
     public static class ModOptions
     {
         private static List<object> AcceptableValuesFiller<T>(ConfigEntry<T> entry, List<T>? acceptableValues = null)
@@ -41,20 +48,24 @@ namespace MTDUI
             return acceptableValues.Cast<object>().ToList();
         }
 
-        public static void Register<T>(string subMenuName, ConfigEntry<T> entry, List<T>? acceptableValues = null, bool isInPause = false)
+        public static void Register<T>(ConfigEntry<T> entry, List<T>? acceptableValues = null, ConfigEntryLocationType location = ConfigEntryLocationType.MainOnly, string subMenuName = "")
         {
-            var modConfigEntry = new ModConfigEntry(entry, AcceptableValuesFiller(entry, acceptableValues), isInPause);
+            var modConfigEntry = new ModConfigEntry(entry, AcceptableValuesFiller(entry, acceptableValues), location);
 
             ModOptionsMenuController.ConfigEntries.Add(modConfigEntry);
 
+            if (subMenuName == "") subMenuName= Assembly.GetCallingAssembly().GetName().Name;
+
+            // TODO: add fallback for registering more than 9 config under the same submenuname (smtg like submenuname 2) automatically
+            // Else the back button is not accessible
             if (!ModOptionsMenuController.SortedConfigEntries.ContainsKey(subMenuName)) ModOptionsMenuController.SortedConfigEntries.Add(subMenuName, new List<ModConfigEntry>());
             ModOptionsMenuController.SortedConfigEntries[subMenuName].Add(modConfigEntry);
         }
 
-        public static void RegisterWithPauseAction<T>(string subMenuName, ConfigEntry<T> entry, Action changeMethod, List<T>? acceptableValues = null)
+        public static void RegisterWithPauseAction<T>(ConfigEntry<T> entry, Action changeMethod, List<T>? acceptableValues = null, string subMenuName = "")
         {
             ModOptionChangeIngamePatch.AddPatchActionToPause(changeMethod);
-            Register(subMenuName, entry, acceptableValues, true);
+            Register(entry, acceptableValues, ConfigEntryLocationType.Everywhere, subMenuName);
         }
     }
 }
