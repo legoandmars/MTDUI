@@ -21,6 +21,8 @@ namespace MTDUI
 
     public static class ModOptions
     {
+        public static readonly string ModListButtonName = "Mod List";
+
         private static List<object> AcceptableValuesFiller<T>(ConfigEntry<T> entry, List<T>? acceptableValues = null)
         {
             if (acceptableValues == null) acceptableValues = new List<T>();
@@ -47,7 +49,7 @@ namespace MTDUI
 
             return acceptableValues.Cast<object>().ToList();
         }
-
+        
         public static void Register<T>(ConfigEntry<T> entry, List<T>? acceptableValues = null, ConfigEntryLocationType location = ConfigEntryLocationType.MainOnly, string subMenuName = "")
         {
             var modConfigEntry = new ModConfigEntry(entry, AcceptableValuesFiller(entry, acceptableValues), location);
@@ -60,6 +62,11 @@ namespace MTDUI
             // Else the back button is not accessible
             if (!ModOptionsMenuController.SortedConfigEntries.ContainsKey(subMenuName)) ModOptionsMenuController.SortedConfigEntries.Add(subMenuName, new List<ModConfigEntry>());
             ModOptionsMenuController.SortedConfigEntries[subMenuName].Add(modConfigEntry);
+        }
+
+        public static void RegisterOptionInModList<T>(ConfigEntry<T> entry, List<T>? acceptableValues = null)
+        {
+            Register(entry, acceptableValues, ConfigEntryLocationType.MainOnly, ModListButtonName);
         }
     }
 }

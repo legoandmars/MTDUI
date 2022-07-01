@@ -25,6 +25,7 @@ Support for new ConfigEntry types will be added as the library matures.
 ### Example Usage
 
 ```cs
+using MTDUI;
 // Create a new configuration file using the BepInEx config system
 var customFile = new ConfigFile(Path.Combine(Paths.ConfigPath, "GameSpeed.cfg"), true);
 
@@ -42,6 +43,14 @@ ModOptions.Register(gameSpeed, new List<int>(){ 1, 2, 3, 4, 5, 10 });
 ModOptions.Register(gameSpeed, new List<int>(){ 1, 2, 3, 4, 5, 10 }, MTDUI.ConfigEntryLocationType.Everywhere, "Custom Mod Name");
 
 // The acceptableValues list is filled automatically for bool and enum configEntries
+
+
+// You can add configs to a global section called "Mod List"
+// This section is intended to store the general activation configEntry of your mod, as to not clutter up the submenu with inactive mods
+// Something like that, in the first lines of your plugin, is the expected usage
+activateMod = Config.Bind("Activation", "SpeedMod", true, "If false, the mod does not load");
+ModOptions.RegisterOptionInModList(activateMod);
+if (!activateMod.Value) return;
 
 // gameSpeed should now be updated when changed in the ingame UI (or when the cfg file is manually modified)
 // Use gameSpeed.Value when you want to actually use the value

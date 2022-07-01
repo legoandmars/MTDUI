@@ -174,6 +174,7 @@ namespace MTDUI.Controllers
             }
             ModOptionComponents = new List<ModOptionComponent>();
             var entryCount = 1;
+            var modListHasEntries = false;
 
             foreach (var modConfigEntries in SortedConfigEntries)
             {
@@ -190,16 +191,25 @@ namespace MTDUI.Controllers
                         button.gameObject.SetActive(false);
                     }
                 }
+
+
                 // submenu back button should always be last
                 var submenuBackbutton = menuType == OptionsMenuType.MainMenu ? ModOptionsSubMenuBackButton : PauseModOptionsSubMenuBackButton;
                 if (submenuBackbutton != null) submenuBackbutton.transform.SetAsLastSibling(); // back button should always be at the bottom
 
-                // create buttons for each mod, if necessary
-                if (hasConfigEntries)
+                // create buttons for each mod, if necessary, mod list button last
+                if (hasConfigEntries && name != ModOptions.ModListButtonName)
                 {
                     AddButtonFromModName(menuType, name);
                     entryCount++;
                 }
+                else if (hasConfigEntries && name == ModOptions.ModListButtonName) modListHasEntries = true;
+            }
+
+            // Mod List just before back button
+            if (modListHasEntries)
+            {
+                AddButtonFromModName(menuType, ModOptions.ModListButtonName);
             }
 
             var backButton = menuType == OptionsMenuType.MainMenu ? ModOptionsBackButton : PauseModOptionsBackButton;
