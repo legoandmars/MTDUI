@@ -34,26 +34,27 @@ var gameSpeed = customFile.Bind("General", "Game Speed", 1, "The speed at which 
 
 // Register the config option with MTDUI's in-game mod settings
 // 1, 2, 3, 4, 5, and 10 are valid options that can be selected
-// This option will only show on the main title screen Mod Options panel
+// NOTE: Enums and Bools will have this list automatically filled, but you need to manually add values for ints/floats
+// This is visible on the title screen and pause menu by default
 ModOptions.Register(gameSpeed, new List<int>(){ 1, 2, 3, 4, 5, 10 });
-
-// If your config/patch support being change mid-run (using gameSpeed.SettingChanged EventHandler for instance)
-// This option will be modifiable in the every Mod Options panel
-// "Custom Mod Name" is the section in which the config will be shown, if not specified, the assemblyname is used
-ModOptions.Register(gameSpeed, new List<int>(){ 1, 2, 3, 4, 5, 10 }, MTDUI.ConfigEntryLocationType.Everywhere, "Custom Mod Name");
-
-// The acceptableValues list is filled automatically for bool and enum configEntries
-
-
-// You can add configs to a global section called "Mod List"
-// This section is intended to store the general activation configEntry of your mod, as to not clutter up the submenu with inactive mods
-// Something like that, in the first lines of your plugin, is the expected usage
-activateMod = Config.Bind("Activation", "SpeedMod", true, "If false, the mod does not load");
-ModOptions.RegisterOptionInModList(activateMod);
-if (!activateMod.Value) return;
-
 // gameSpeed should now be updated when changed in the ingame UI (or when the cfg file is manually modified)
 // Use gameSpeed.Value when you want to actually use the value
+
+// Other options:
+// You can control which menu a setting will appear on by using ConfigEntryLocationType
+// This can be useful if you have settings you don't want people to change mid-run
+ModOptions.Register(gameSpeed, new List<int>(){ 1, 2, 3, 4, 5, 10 }, ConfigEntryLocationType.PauseOnly); // only appears in the in-game pause menu
+ModOptions.Register(gameSpeed, new List<int>(){ 1, 2, 3, 4, 5, 10 }, ConfigEntryLocationType.MainOnly); // only appears on the title screen
+// You can make the option appear on a custom sub-menu by passing a string
+ModOptions.Register(gameSpeed, new List<int>(){ 1, 2, 3, 4, 5, 10 }, ConfigEntryLocationType.Everywhere, "Custom SubMenu"); // appears in a "Custom SubMenu" tab
+
+
+// You can use RegisterOptionInModList to add configs to a "Mod List" subpanel
+// This section is mostly intended to be used for activation/deactivation, as to not clutter up the submenu with inactive mods
+// The expected usage is to disable the rest of the plugin if enabled
+activateMod = Config.Bind("General", "Activation", true, "If false, the mod does not load");
+ModOptions.RegisterOptionInModList(activateMod);
+if (!activateMod.Value) return;
 ```
 
 For more information on how the BepInEx config system works, check out [the official documentation](https://docs.bepinex.dev/articles/dev_guide/plugin_tutorial/4_configuration.html).
