@@ -50,7 +50,7 @@ namespace MTDUI
             return acceptableValues.Cast<object>().ToList();
         }
         
-        public static void Register<T>(ConfigEntry<T> entry, List<T>? acceptableValues = null, ConfigEntryLocationType location = ConfigEntryLocationType.MainOnly, string subMenuName = "")
+        public static void Register<T>(ConfigEntry<T> entry, List<T>? acceptableValues = null, ConfigEntryLocationType location = ConfigEntryLocationType.Everywhere, string subMenuName = "")
         {
             var modConfigEntry = new ModConfigEntry(entry, AcceptableValuesFiller(entry, acceptableValues), location);
 
