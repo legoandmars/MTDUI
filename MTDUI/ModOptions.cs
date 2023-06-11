@@ -49,14 +49,14 @@ namespace MTDUI
 
             return acceptableValues.Cast<object>().ToList();
         }
-        
+
         public static void Register<T>(ConfigEntry<T> entry, List<T>? acceptableValues = null, ConfigEntryLocationType location = ConfigEntryLocationType.Everywhere, string subMenuName = "")
         {
             var modConfigEntry = new ModConfigEntry(entry, AcceptableValuesFiller(entry, acceptableValues), location);
 
             ModOptionsMenuController.ConfigEntries.Add(modConfigEntry);
 
-            if (subMenuName == "") subMenuName= Assembly.GetCallingAssembly().GetName().Name;
+            if (subMenuName == "") subMenuName = Assembly.GetCallingAssembly().GetName().Name;
 
             // TODO: add fallback for registering more than 9 config under the same submenuname (smtg like submenuname 2) automatically
             // Else the back button is not accessible

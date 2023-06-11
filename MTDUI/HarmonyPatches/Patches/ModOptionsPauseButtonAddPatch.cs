@@ -15,7 +15,7 @@ namespace MTDUI.HarmonyPatches.Patches
             if (ModOptionsMenuController.GameController == null) ModOptionsMenuController.GameController = ___owner;
 
             ModOptionsMenuController.CreateModOptionsButton(OptionsMenuType.PauseMenu);
-            ModOptionsMenuController.CreateModOptionsPanel(OptionsMenuType.PauseMenu);
+            ModOptionsMenuController.CreatePauseMenuModsMenu();
 
             ModOptionsMenuController.PauseModOptionsButton?.onClick.AddListener(new UnityAction(ModOptionsMenuController.OnPauseModOptionsClick));
         }

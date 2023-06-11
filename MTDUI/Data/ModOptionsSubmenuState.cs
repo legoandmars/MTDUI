@@ -13,7 +13,7 @@ namespace MTDUI.Data
 
         public override void Enter()
         {
-            foreach (var button in ModOptionsMenuController.ModOptionComponents)
+            foreach (var button in ModOptionsMenuController.TitleScreenModOptionComponents)
             {
                 button.gameObject.SetActive(button.Mod == CurrentSubmenu);
             }

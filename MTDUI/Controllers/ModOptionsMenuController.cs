@@ -38,7 +38,8 @@ namespace MTDUI.Controllers
         public static flanne.UIExtensions.Panel? PauseModOptionsSubPanel = null;
         public static Button? PauseModOptionsSubMenuBackButton = null;
 
-        public static List<ModOptionComponent> ModOptionComponents = new List<ModOptionComponent>();
+        public static List<ModOptionComponent> PauseMenuModOptionComponents = new List<ModOptionComponent>();
+        public static List<ModOptionComponent> TitleScreenModOptionComponents = new List<ModOptionComponent>();
 
         // Listeners Title screen
         public static void OnModOptionsClick()
@@ -71,15 +72,12 @@ namespace MTDUI.Controllers
             else return location == ConfigEntryLocationType.MainOnly;
         }
 
-        public static ModOptionComponent? AddButtonFromConfigEntry(ModConfigEntry configEntry, OptionsMenuType menuType, string mod)
+        public static ModOptionComponent? AddButtonFromConfigEntry(GameObject templateButton, ModConfigEntry configEntry, OptionsMenuType menuType, string mod)
         {
             // Check if configEntry needs to be implemented in the current menu
             if (!AreEntryAndMenuCompatible(menuType, configEntry.Location)) return null;
 
-            var template = (menuType == OptionsMenuType.MainMenu ? ModOptionsSubMenuBackButton : PauseModOptionsSubMenuBackButton)?.gameObject;
-            if (template == null) return null; // Should never happed
-
-            var newButton = Object.Instantiate(template, template.transform.parent);
+            var newButton = Object.Instantiate(templateButton, templateButton.transform.parent);
             newButton.GetComponentInChildren<TextLocalizerUI>().enabled = false;
 
             var optionComponent = newButton.AddComponent<ModOptionComponent>();
@@ -90,11 +88,8 @@ namespace MTDUI.Controllers
             return optionComponent;
         }
 
-        public static void AddButtonFromModName(OptionsMenuType menuType, string mod)
+        public static void AddButtonFromModName(GameObject template, OptionsMenuType menuType, string mod)
         {
-            var template = (menuType == OptionsMenuType.MainMenu ? ModOptionsBackButton : PauseModOptionsBackButton)?.gameObject;
-            if (template == null) return; //Should never happend
-
             var newButton = Object.Instantiate(template, template.transform.parent);
 
             newButton.GetComponent<Button>().onClick.AddListener(
@@ -128,15 +123,6 @@ namespace MTDUI.Controllers
             else PauseModOptionsButton = newButton.GetComponent<Button>();
         }
 
-        private static void SetButtonText(Button? btn, string text)
-        {
-            if (btn != null)
-            {
-                btn.GetComponentInChildren<TextMeshProUGUI>().text = text;
-                // btn.GetComponentInChildren<TextLocalizerUI>().enabled = false;
-            }
-        }
-
         private static void ClearMenuEntriesList(flanne.UIExtensions.Menu menu, Button? button)
         {
             var entries = Traverse.Create(menu).Field("entries");
@@ -158,64 +144,67 @@ namespace MTDUI.Controllers
             ClearMenuEntriesList(menu, backButton);
             return (menu, backButton);
         }
-        public static void CreateTitleScreenModsMenu()
+        private static (flanne.UIExtensions.Menu, Button, flanne.UIExtensions.Menu, Button, List<ModOptionComponent>) CreateGenericModsMenu(GameObject templateMenu, OptionsMenuType menuType)
         {
-            if (TitleScreenController == null) return;
-            if (ModOptionsMenu != null) return; // Change that to flag getter
-            var ingameOptionsMenu = TitleScreenController.optionsMenu.gameObject;
+            var (mainMenu, mainBackButton) = CloneAndCleanMenu(templateMenu);
+            var (subMenu, subMenuBackButton) = CloneAndCleanMenu(templateMenu);
 
-            var mainMenu = CloneAndCleanMenu(ingameOptionsMenu);
-            ModOptionsMenu = mainMenu.Item1;
-            ModOptionsBackButton = mainMenu.Item2;
-
-            var subMenu = CloneAndCleanMenu(ingameOptionsMenu);
-            ModOptionsSubmenuMenu = subMenu.Item1;
-            ModOptionsSubMenuBackButton = subMenu.Item2;
-
-            // get all config files so we can make per-mod submenus
-            foreach (var component in ModOptionComponents)
-            {
-                if (component != null)
-                {
-                    component.gameObject.SetActive(false);
-                    Object.Destroy(component);
-                }
-            }
-            ModOptionComponents = new List<ModOptionComponent>();
-            var entryCount = 1;
+            var modOptionCompList = new List<ModOptionComponent>();
             var modListHasEntries = false;
 
             foreach (var modConfigEntries in SortedConfigEntries)
             {
-                var name = modConfigEntries.Key;
-                bool hasConfigEntries = false;
+                var entryName = modConfigEntries.Key;
+                bool isNotEmptyEntry = false;
                 foreach (var configEntry in modConfigEntries.Value)
                 {
-                    // create button for each entry
-                    var button = AddButtonFromConfigEntry(configEntry, OptionsMenuType.MainMenu, name);
-                    if (button != null) // Prevent button that should not be in pause menu
-                    {
-                        hasConfigEntries = true;
-                        ModOptionComponents.Add(button);
-                        button.gameObject.SetActive(false);
-                    }
+                    var button = AddButtonFromConfigEntry(subMenuBackButton.gameObject, configEntry, menuType, entryName);
+                    if (button == null) continue; // if not in correct menu
+                    isNotEmptyEntry = true;
+                    modOptionCompList.Add(button);
+                    button.gameObject.SetActive(false);
                 }
 
-                // submenu back button should always be last
-                ModOptionsSubMenuBackButton.transform.SetAsLastSibling();
+                subMenuBackButton.transform.SetAsLastSibling();
 
-                // create buttons for each mod, if necessary, mod list button last
-                if (hasConfigEntries && name != ModOptions.ModListButtonName)
+                if (isNotEmptyEntry)
                 {
-                    AddButtonFromModName(OptionsMenuType.MainMenu, name);
-                    entryCount++;
+                    if (entryName == ModOptions.ModListButtonName) modListHasEntries = true;
+                    else AddButtonFromModName(mainBackButton.gameObject, menuType, entryName);
                 }
-                else if (hasConfigEntries && name == ModOptions.ModListButtonName) modListHasEntries = true;
             }
 
-            if (modListHasEntries) AddButtonFromModName(OptionsMenuType.MainMenu, ModOptions.ModListButtonName);
-            ModOptionsBackButton.transform.SetAsLastSibling();
+            if (modListHasEntries) AddButtonFromModName(mainBackButton.gameObject, OptionsMenuType.MainMenu, ModOptions.ModListButtonName);
+            mainBackButton.transform.SetAsLastSibling();
+
+            return (mainMenu, mainBackButton, subMenu, subMenuBackButton, modOptionCompList);
         }
+        public static void CreateTitleScreenModsMenu()
+        {
+            if (TitleScreenController == null || ModOptionsMenu != null) return;
+            var ingameOptionsMenu = TitleScreenController.optionsMenu.gameObject;
+
+            var genericMenuResult = CreateGenericModsMenu(ingameOptionsMenu, OptionsMenuType.MainMenu);
+            ModOptionsMenu = genericMenuResult.Item1;
+            ModOptionsBackButton = genericMenuResult.Item2;
+            ModOptionsSubmenuMenu = genericMenuResult.Item3;
+            ModOptionsSubMenuBackButton = genericMenuResult.Item4;
+            TitleScreenModOptionComponents = genericMenuResult.Item5;
+        }
+
+        public static void CreatePauseMenuModsMenu()
+        {
+            if (GameController == null || PauseModOptionsPanel != null) return;
+            var ingameOptionsMenu = GameController.optionsMenu.gameObject;
+
+            var genericMenuResult = CreateGenericModsMenu(ingameOptionsMenu, OptionsMenuType.PauseMenu);
+            PauseModOptionsPanel = genericMenuResult.Item1;
+            PauseModOptionsBackButton = genericMenuResult.Item2;
+            PauseModOptionsSubPanel = genericMenuResult.Item3;
+            PauseModOptionsSubMenuBackButton = genericMenuResult.Item4;
+            PauseMenuModOptionComponents = genericMenuResult.Item5;
+        }
+        /*
         public static void CreateModOptionsPanel(OptionsMenuType menuType)
         {
             if (menuType == OptionsMenuType.MainMenu ? ModOptionsMenu != null : PauseModOptionsPanel != null) return;
@@ -251,7 +240,7 @@ namespace MTDUI.Controllers
 
             // get all config files so we can make per-mod submenus
 
-            foreach (var component in ModOptionComponents)
+            foreach (var component in PauseMenuModOptionComponents)
             {
                 if (component != null)
                 {
@@ -259,7 +248,7 @@ namespace MTDUI.Controllers
                     Object.Destroy(component);
                 }
             }
-            ModOptionComponents = new List<ModOptionComponent>();
+            PauseMenuModOptionComponents = new List<ModOptionComponent>();
             var entryCount = 1;
             var modListHasEntries = false;
 
@@ -274,7 +263,7 @@ namespace MTDUI.Controllers
                     if (button != null) // Prevent button that should not be in pause menu
                     {
                         hasConfigEntries = true;
-                        ModOptionComponents.Add(button);
+                        PauseMenuModOptionComponents.Add(button);
                         button.gameObject.SetActive(false);
                     }
                 }
@@ -323,6 +312,6 @@ namespace MTDUI.Controllers
 
                 optionsMenuRect.sizeDelta = new Vector2(300, currentY);
             }
-        }
+        }*/
     }
 }
