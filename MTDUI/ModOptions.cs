@@ -22,6 +22,8 @@ namespace MTDUI
     public static class ModOptions
     {
         public static readonly string ModListButtonName = "Mod List";
+        private static readonly int maxItemInSubmenu = 8;
+        private static readonly int maxSubmenusWithSameName = 4;
 
         private static List<object> AcceptableValuesFiller<T>(ConfigEntry<T> entry, List<T>? acceptableValues = null)
         {
@@ -58,10 +60,26 @@ namespace MTDUI
 
             if (subMenuName == "") subMenuName = Assembly.GetCallingAssembly().GetName().Name;
 
-            // TODO: add fallback for registering more than 9 config under the same submenuname (smtg like submenuname 2) automatically
-            // Else the back button is not accessible
-            if (!ModOptionsMenuController.SortedConfigEntries.ContainsKey(subMenuName)) ModOptionsMenuController.SortedConfigEntries.Add(subMenuName, new List<ModConfigEntry>());
-            ModOptionsMenuController.SortedConfigEntries[subMenuName].Add(modConfigEntry);
+            var _submenuName = subMenuName;
+            var isSubmenuFull = false;
+            var counter = 1;
+            do
+            {
+                if (!ModOptionsMenuController.SortedConfigEntries.ContainsKey(_submenuName)) ModOptionsMenuController.SortedConfigEntries.Add(_submenuName, new List<ModConfigEntry>());
+                if (ModOptionsMenuController.SortedConfigEntries[_submenuName].Count >= maxItemInSubmenu)
+                {
+                    counter++;
+                    _submenuName = subMenuName + " " + counter;
+                    isSubmenuFull = true;
+                }
+                else isSubmenuFull = false;
+            } while (isSubmenuFull || counter >= maxSubmenusWithSameName);
+            if (isSubmenuFull)
+            {
+                Debug.LogError("Too many registrations with the same name");
+                return;
+            }
+            ModOptionsMenuController.SortedConfigEntries[_submenuName].Add(modConfigEntry);
         }
 
         public static void RegisterOptionInModList<T>(ConfigEntry<T> entry, List<T>? acceptableValues = null)
