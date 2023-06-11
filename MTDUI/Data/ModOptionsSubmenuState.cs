@@ -18,14 +18,14 @@ namespace MTDUI.Data
                 button.gameObject.SetActive(button.Mod == CurrentSubmenu);
             }
 
-            ModOptionsMenuController.ModOptionsSubMenuBackButton?.onClick.AddListener(OnClick);
-            ModOptionsMenuController.ModOptionsSubmenuMenu?.Show();
+            ModOptionsMenuController.TitleSubmenuBackButton?.onClick.AddListener(OnClick);
+            ModOptionsMenuController.TitleSubmenu?.Show();
         }
 
         public override void Exit()
         {
-            ModOptionsMenuController.ModOptionsSubMenuBackButton?.onClick.RemoveListener(OnClick);
-            ModOptionsMenuController.ModOptionsSubmenuMenu?.Hide();
+            ModOptionsMenuController.TitleSubmenuBackButton?.onClick.RemoveListener(OnClick);
+            ModOptionsMenuController.TitleSubmenu?.Hide();
         }
     }
 }

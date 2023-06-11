@@ -13,7 +13,7 @@ namespace MTDUI.HarmonyPatches.Patches
         private static void Postfix(ref TitleScreenController ___owner)
         {
             if (!ModOptionsMenuController.isTitleScreenModMenuCreated) ModOptionsMenuController.CreateTitleScreenModsMenu(___owner);
-            ModOptionsMenuController.ModOptionsButton?.onClick.AddListener(new UnityAction(___owner.ChangeState<ModOptionsMenuState>));
+            ModOptionsMenuController.TitleModOptionsButton?.onClick.AddListener(new UnityAction(___owner.ChangeState<ModOptionsMenuState>));
         }
     }
 }

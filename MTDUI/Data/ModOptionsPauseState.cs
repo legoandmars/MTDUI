@@ -12,14 +12,14 @@ namespace MTDUI.Data
 
         public override void Enter()
         {
-            ModOptionsMenuController.PauseModOptionsBackButton?.onClick.AddListener(OnClick);
-            ModOptionsMenuController.PauseModOptionsMenu?.Show();
+            ModOptionsMenuController.PauseMenuBackButton?.onClick.AddListener(OnClick);
+            ModOptionsMenuController.PauseMenu?.Show();
         }
 
         public override void Exit()
         {
-            ModOptionsMenuController.PauseModOptionsBackButton?.onClick.RemoveListener(OnClick);
-            ModOptionsMenuController.PauseModOptionsMenu?.Hide();
+            ModOptionsMenuController.PauseMenuBackButton?.onClick.RemoveListener(OnClick);
+            ModOptionsMenuController.PauseMenu?.Hide();
         }
     }
 }
