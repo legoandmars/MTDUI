@@ -67,12 +67,12 @@ namespace MTDUI.Controllers
             else return location == ConfigEntryLocationType.MainOnly;
         }
 
-        private static ModOptionComponent? AddButtonFromConfigEntry(GameObject templateButton, ModConfigEntry configEntry, OptionsMenuType menuType, string mod)
+        private static ModOptionComponent? AddButtonFromConfigEntry(GameObject template, ModConfigEntry configEntry, OptionsMenuType menuType, string mod)
         {
             // Check if configEntry needs to be implemented in the current menu
             if (!AreEntryAndMenuCompatible(menuType, configEntry.Location)) return null;
 
-            var newButton = Object.Instantiate(templateButton, templateButton.transform.parent);
+            var newButton = Object.Instantiate(template, template.transform.parent);
             newButton.GetComponentInChildren<TextLocalizerUI>().enabled = false;
 
             var optionComponent = newButton.AddComponent<ModOptionComponent>();
@@ -106,7 +106,6 @@ namespace MTDUI.Controllers
             var localizer = newButton.GetComponentInChildren<TextLocalizerUI>();
             Traverse.Create(localizer).Field("localizedString").SetValue(newLocalization); // force set to new localization
 
-            // now set it to the proper spot in the hierarchy
             newButton.transform.SetSiblingIndex(template.transform.GetSiblingIndex() + 1);
             return newButton.GetComponent<Button>();
         }
@@ -199,7 +198,7 @@ namespace MTDUI.Controllers
             var rect = _gameController.pauseMenu.GetComponent<RectTransform>();
             rect.sizeDelta = rect.sizeDelta + new Vector2(0, PauseModOptionsButton?.GetComponent<RectTransform>().sizeDelta.y ?? 24f);
 
-            // Resize main mods menu
+            // Resize custom mods list menu
             var optionsMenuRect = PauseMenu.GetComponent<RectTransform>();
             var entryCount = PauseMenu.GetComponentsInChildren<Button>().Length;
             var buttonSize = PauseMenuBackButton.GetComponent<RectTransform>().sizeDelta.y;

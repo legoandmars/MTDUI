@@ -6,10 +6,6 @@ namespace MTDUI.Data
     public class ModOptionsSubmenuState : TitleScreenState
     {
         public static string CurrentSubmenu = "";
-        public void OnClick()
-        {
-            owner.ChangeState<ModOptionsMenuState>();
-        }
 
         public override void Enter()
         {
@@ -18,13 +14,13 @@ namespace MTDUI.Data
                 button.gameObject.SetActive(button.Mod == CurrentSubmenu);
             }
 
-            ModOptionsMenuController.TitleSubmenuBackButton?.onClick.AddListener(OnClick);
+            ModOptionsMenuController.TitleSubmenuBackButton?.onClick.AddListener(owner.ChangeState<ModOptionsMenuState>);
             ModOptionsMenuController.TitleSubmenu?.Show();
         }
 
         public override void Exit()
         {
-            ModOptionsMenuController.TitleSubmenuBackButton?.onClick.RemoveListener(OnClick);
+            ModOptionsMenuController.TitleSubmenuBackButton?.onClick.RemoveAllListeners();
             ModOptionsMenuController.TitleSubmenu?.Hide();
         }
     }

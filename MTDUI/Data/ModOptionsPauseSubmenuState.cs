@@ -8,10 +8,6 @@ namespace MTDUI.Data
     {
         public static string CurrentSubmenu = "";
         private static RectTransform? rect;
-        public void OnClick()
-        {
-            owner.ChangeState<ModOptionsPauseState>();
-        }
 
         public override void Enter()
         {
@@ -39,13 +35,13 @@ namespace MTDUI.Data
             buttonListRect.position = Vector3.zero;
             buttonListRect.sizeDelta = new Vector2(100, entryCount * buttonSize);
 
-            ModOptionsMenuController.PauseSubmenuBackButton?.onClick.AddListener(OnClick);
+            ModOptionsMenuController.PauseSubmenuBackButton?.onClick.AddListener(owner.ChangeState<ModOptionsPauseState>);
             ModOptionsMenuController.PauseSubmenu?.Show();
         }
 
         public override void Exit()
         {
-            ModOptionsMenuController.PauseSubmenuBackButton?.onClick.RemoveListener(OnClick);
+            ModOptionsMenuController.PauseSubmenuBackButton?.onClick.RemoveAllListeners();
             ModOptionsMenuController.PauseSubmenu?.Hide();
         }
     }

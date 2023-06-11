@@ -5,20 +5,15 @@ namespace MTDUI.Data
 {
     public class ModOptionsMenuState : TitleScreenState
     {
-        public void OnClick()
-        {
-            owner.ChangeState<TitleMainMenuState>();
-        }
-
         public override void Enter()
         {
-            ModOptionsMenuController.TitleMenuBackButton?.onClick.AddListener(OnClick);
+            ModOptionsMenuController.TitleMenuBackButton?.onClick.AddListener(owner.ChangeState<TitleMainMenuState>);
             ModOptionsMenuController.TitleMenu?.Show();
         }
 
         public override void Exit()
         {
-            ModOptionsMenuController.TitleMenuBackButton?.onClick.RemoveListener(OnClick);
+            ModOptionsMenuController.TitleMenuBackButton?.onClick.RemoveAllListeners();
             ModOptionsMenuController.TitleMenu?.Hide();
         }
     }
