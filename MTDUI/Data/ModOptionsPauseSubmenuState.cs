@@ -15,13 +15,13 @@ namespace MTDUI.Data
 
         public override void Enter()
         {
-            if (ModOptionsMenuController.PauseModOptionsSubPanel == null || ModOptionsMenuController.PauseModOptionsSubMenuBackButton == null)
+            if (ModOptionsMenuController.PauseModOptionsSubmenuMenu == null || ModOptionsMenuController.PauseModOptionsSubMenuBackButton == null)
             {
                 Debug.LogError("No panel present");
                 return;
             }
 
-            if (rect == null) rect = ModOptionsMenuController.PauseModOptionsSubPanel.GetComponent<RectTransform>();
+            if (rect == null) rect = ModOptionsMenuController.PauseModOptionsSubmenuMenu.GetComponent<RectTransform>();
 
             // Rescaling based on number of entry to show
             var entryCount = 1;
@@ -35,18 +35,18 @@ namespace MTDUI.Data
             var verticalPadding = 40;
             rect.sizeDelta = new Vector2(300, verticalPadding + buttonSize * entryCount);
 
-            var buttonListRect = ModOptionsMenuController.PauseModOptionsSubPanel.transform.GetChild(0).GetComponent<RectTransform>();
+            var buttonListRect = ModOptionsMenuController.PauseModOptionsSubmenuMenu.transform.GetChild(0).GetComponent<RectTransform>();
             buttonListRect.position = Vector3.zero;
             buttonListRect.sizeDelta = new Vector2(100, entryCount * buttonSize);
 
             ModOptionsMenuController.PauseModOptionsSubMenuBackButton?.onClick.AddListener(OnClick);
-            ModOptionsMenuController.PauseModOptionsSubPanel?.Show();
+            ModOptionsMenuController.PauseModOptionsSubmenuMenu?.Show();
         }
 
         public override void Exit()
         {
             ModOptionsMenuController.PauseModOptionsSubMenuBackButton?.onClick.RemoveListener(OnClick);
-            ModOptionsMenuController.PauseModOptionsSubPanel?.Hide();
+            ModOptionsMenuController.PauseModOptionsSubmenuMenu?.Hide();
         }
     }
 }

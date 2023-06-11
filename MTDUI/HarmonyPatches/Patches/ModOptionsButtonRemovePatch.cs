@@ -10,11 +10,7 @@ namespace MTDUI.HarmonyPatches.Patches
     {
         private static void Postfix(TitleMainMenuState __instance)
         {
-            if(ModOptionsMenuController.ModOptionsButton != null)
-            {
-                // convert to removelistener?
-                ModOptionsMenuController.ModOptionsButton.onClick.RemoveAllListeners();
-            }
+            ModOptionsMenuController.TitleScreenMenuRemoveListeners();
         }
     }
 }

@@ -5,21 +5,21 @@ namespace MTDUI.Data
 {
     public class ModOptionsPauseState : GameState
     {
-		public void OnClick()
-		{
-			owner.ChangeState<PauseState>();
-		}
+        public void OnClick()
+        {
+            owner.ChangeState<PauseState>();
+        }
 
-		public override void Enter()
-		{
-			ModOptionsMenuController.PauseModOptionsBackButton?.onClick.AddListener(OnClick);
-			ModOptionsMenuController.PauseModOptionsPanel?.Show();
-		}
+        public override void Enter()
+        {
+            ModOptionsMenuController.PauseModOptionsBackButton?.onClick.AddListener(OnClick);
+            ModOptionsMenuController.PauseModOptionsMenu?.Show();
+        }
 
-		public override void Exit()
-		{
-			ModOptionsMenuController.PauseModOptionsBackButton?.onClick.RemoveListener(OnClick);
-			ModOptionsMenuController.PauseModOptionsPanel?.Hide();
-		}
-	}
+        public override void Exit()
+        {
+            ModOptionsMenuController.PauseModOptionsBackButton?.onClick.RemoveListener(OnClick);
+            ModOptionsMenuController.PauseModOptionsMenu?.Hide();
+        }
+    }
 }

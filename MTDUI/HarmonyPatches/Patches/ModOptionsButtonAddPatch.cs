@@ -14,10 +14,8 @@ namespace MTDUI.HarmonyPatches.Patches
         {
             if (ModOptionsMenuController.TitleScreenController == null) ModOptionsMenuController.TitleScreenController = ___owner;
 
-            ModOptionsMenuController.CreateModOptionsButton(OptionsMenuType.MainMenu);
-            ModOptionsMenuController.CreateTitleScreenModsMenu();
-
-            ModOptionsMenuController.ModOptionsButton?.onClick.AddListener(new UnityAction(ModOptionsMenuController.OnModOptionsClick));
+            if (!ModOptionsMenuController.isTitleScreenModMenuCreated) ModOptionsMenuController.CreateTitleScreenModsMenu();
+            ModOptionsMenuController.TitleScreenMenuAddListeners();
         }
     }
 }
