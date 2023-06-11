@@ -19,59 +19,45 @@ namespace MTDUI.Controllers
     public static class ModOptionsMenuController
     {
         // things are a bit repetitive here
-        public static List<ModConfigEntry> ConfigEntries = new List<ModConfigEntry>();
-        public static Dictionary<string, List<ModConfigEntry>> SortedConfigEntries = new Dictionary<string, List<ModConfigEntry>>();
+        public static List<ModConfigEntry> ConfigEntries { get; } = new List<ModConfigEntry>();
+        public static Dictionary<string, List<ModConfigEntry>> SortedConfigEntries { get; } = new Dictionary<string, List<ModConfigEntry>>();
 
         // Mod Option in Title Screen
-
         public static bool isTitleScreenModMenuCreated
         {
             get { return ModOptionsButton != null && ModOptionsMenu != null; }
         }
-        public static TitleScreenController? TitleScreenController = null;
-        public static Button? ModOptionsButton = null;
-        public static Button? ModOptionsBackButton = null;
-        public static Button? ModOptionsSubMenuBackButton = null;
-        public static flanne.UIExtensions.Menu? ModOptionsMenu = null;
-        public static flanne.UIExtensions.Menu? ModOptionsSubmenuMenu = null;
+        private static TitleScreenController? _titleScreenController = null;
+        public static Button? ModOptionsButton { get; private set; }
+        public static Button? ModOptionsBackButton { get; private set; }
+        public static Button? ModOptionsSubMenuBackButton { get; private set; }
+        public static flanne.UIExtensions.Menu? ModOptionsMenu { get; private set; }
+        public static flanne.UIExtensions.Menu? ModOptionsSubmenuMenu { get; private set; }
+        public static List<ModOptionComponent> TitleScreenModOptionComponents = new List<ModOptionComponent>();
 
         // Mod Option in Pause Menu
         public static bool isPauseMenuModMenuCreated
         {
             get { return PauseModOptionsButton != null && PauseModOptionsMenu != null; }
         }
-        public static GameController? GameController = null;
-        public static Button? PauseModOptionsButton = null;
-        public static Button? PauseModOptionsBackButton = null;
-        public static flanne.UIExtensions.Menu? PauseModOptionsMenu = null;
-        public static flanne.UIExtensions.Menu? PauseModOptionsSubmenuMenu = null;
-        public static Button? PauseModOptionsSubMenuBackButton = null;
-
+        private static GameController? _gameController = null;
+        public static Button? PauseModOptionsButton { get; private set; }
+        public static Button? PauseModOptionsBackButton { get; private set; }
+        public static flanne.UIExtensions.Menu? PauseModOptionsMenu { get; private set; }
+        public static flanne.UIExtensions.Menu? PauseModOptionsSubmenuMenu { get; private set; }
+        public static Button? PauseModOptionsSubMenuBackButton { get; private set; }
         public static List<ModOptionComponent> PauseMenuModOptionComponents = new List<ModOptionComponent>();
-        public static List<ModOptionComponent> TitleScreenModOptionComponents = new List<ModOptionComponent>();
 
-        // Listeners Title screen
-        public static void OnModOptionsClick()
-        {
-            if (TitleScreenController != null) TitleScreenController.ChangeState<ModOptionsMenuState>();
-        }
-
-        public static void OnModClick(string modName)
+        private static void OnModClick(string modName)
         {
             ModOptionsSubmenuState.CurrentSubmenu = modName;
-            if (TitleScreenController != null) TitleScreenController.ChangeState<ModOptionsSubmenuState>();
+            if (_titleScreenController != null) _titleScreenController.ChangeState<ModOptionsSubmenuState>();
         }
 
-        // Listeners Pause menu
-        public static void OnPauseModOptionsClick()
-        {
-            if (GameController != null) GameController.ChangeState<ModOptionsPauseState>();
-        }
-
-        public static void OnPauseModClick(string modName)
+        private static void OnPauseModClick(string modName)
         {
             ModOptionsPauseSubmenuState.CurrentSubmenu = modName;
-            if (GameController != null) GameController.ChangeState<ModOptionsPauseSubmenuState>();
+            if (_gameController != null) _gameController.ChangeState<ModOptionsPauseSubmenuState>();
         }
 
         private static bool AreEntryAndMenuCompatible(OptionsMenuType menu, ConfigEntryLocationType location)
@@ -81,7 +67,7 @@ namespace MTDUI.Controllers
             else return location == ConfigEntryLocationType.MainOnly;
         }
 
-        public static ModOptionComponent? AddButtonFromConfigEntry(GameObject templateButton, ModConfigEntry configEntry, OptionsMenuType menuType, string mod)
+        private static ModOptionComponent? AddButtonFromConfigEntry(GameObject templateButton, ModConfigEntry configEntry, OptionsMenuType menuType, string mod)
         {
             // Check if configEntry needs to be implemented in the current menu
             if (!AreEntryAndMenuCompatible(menuType, configEntry.Location)) return null;
@@ -97,7 +83,7 @@ namespace MTDUI.Controllers
             return optionComponent;
         }
 
-        public static void AddButtonFromModName(GameObject template, OptionsMenuType menuType, string mod)
+        private static void AddButtonFromModName(GameObject template, OptionsMenuType menuType, string mod)
         {
             var newButton = Object.Instantiate(template, template.transform.parent);
 
@@ -112,7 +98,7 @@ namespace MTDUI.Controllers
             newButton.GetComponentInChildren<TextMeshProUGUI>().text = mod;
         }
 
-        public static Button CreateModOptionsButton(GameObject template)
+        private static Button CreateModOptionsButton(GameObject template)
         {
             var newButton = Object.Instantiate(template, template.transform.parent);
 
@@ -182,12 +168,13 @@ namespace MTDUI.Controllers
 
             return (mainMenu, mainBackButton, subMenu, subMenuBackButton, modOptionCompList);
         }
-        public static void CreateTitleScreenModsMenu()
+        public static void CreateTitleScreenModsMenu(TitleScreenController titleScreenController)
         {
-            if (TitleScreenController == null || isTitleScreenModMenuCreated) return;
+            if (isTitleScreenModMenuCreated) return;
+            _titleScreenController = titleScreenController;
 
-            ModOptionsButton = CreateModOptionsButton(TitleScreenController.mainMenu.transform.GetChild(2).gameObject);
-            var genericMenuResult = CreateGenericModsMenu(TitleScreenController.optionsMenu.gameObject, OptionsMenuType.MainMenu);
+            ModOptionsButton = CreateModOptionsButton(_titleScreenController.mainMenu.transform.GetChild(2).gameObject);
+            var genericMenuResult = CreateGenericModsMenu(_titleScreenController.optionsMenu.gameObject, OptionsMenuType.MainMenu);
             ModOptionsMenu = genericMenuResult.Item1;
             ModOptionsBackButton = genericMenuResult.Item2;
             ModOptionsSubmenuMenu = genericMenuResult.Item3;
@@ -195,20 +182,13 @@ namespace MTDUI.Controllers
             TitleScreenModOptionComponents = genericMenuResult.Item5;
         }
 
-        public static void TitleScreenMenuAddListeners()
+        public static void CreatePauseMenuModsMenu(GameController gameController)
         {
-            ModOptionsButton?.onClick.AddListener(new UnityAction(OnModOptionsClick));
-        }
-        public static void TitleScreenMenuRemoveListeners()
-        {
-            ModOptionsButton?.onClick.RemoveAllListeners();
-        }
-        public static void CreatePauseMenuModsMenu()
-        {
-            if (GameController == null || isPauseMenuModMenuCreated) return;
+            if (isPauseMenuModMenuCreated) return;
+            _gameController = gameController;
 
-            PauseModOptionsButton = CreateModOptionsButton(GameController.optionsButton.gameObject);
-            var genericMenuResult = CreateGenericModsMenu(GameController.optionsMenu.gameObject, OptionsMenuType.PauseMenu);
+            PauseModOptionsButton = CreateModOptionsButton(_gameController.optionsButton.gameObject);
+            var genericMenuResult = CreateGenericModsMenu(_gameController.optionsMenu.gameObject, OptionsMenuType.PauseMenu);
             PauseModOptionsMenu = genericMenuResult.Item1;
             PauseModOptionsBackButton = genericMenuResult.Item2;
             PauseModOptionsSubmenuMenu = genericMenuResult.Item3;
@@ -216,7 +196,7 @@ namespace MTDUI.Controllers
             PauseMenuModOptionComponents = genericMenuResult.Item5;
 
             // Resize ingame main pause menu
-            var rect = GameController.pauseMenu.GetComponent<RectTransform>();
+            var rect = _gameController.pauseMenu.GetComponent<RectTransform>();
             rect.sizeDelta = rect.sizeDelta + new Vector2(0, PauseModOptionsButton?.GetComponent<RectTransform>().sizeDelta.y ?? 24f);
 
             // Resize main mods menu
@@ -230,15 +210,6 @@ namespace MTDUI.Controllers
             var buttonListRect = PauseModOptionsMenu.transform.GetChild(0).GetComponent<RectTransform>();
             buttonListRect.position = Vector3.zero;
             buttonListRect.sizeDelta = new Vector2(100, entryCount * buttonSize);
-        }
-        public static void PauseMenuAddListeners()
-        {
-            PauseModOptionsButton?.onClick.AddListener(new UnityAction(OnPauseModOptionsClick));
-        }
-
-        public static void PauseMenuRemoveListeners()
-        {
-            PauseModOptionsButton?.onClick.RemoveAllListeners();
         }
     }
 }

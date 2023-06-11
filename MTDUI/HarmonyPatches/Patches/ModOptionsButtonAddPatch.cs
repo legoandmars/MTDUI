@@ -12,10 +12,8 @@ namespace MTDUI.HarmonyPatches.Patches
     {
         private static void Postfix(ref TitleScreenController ___owner)
         {
-            if (ModOptionsMenuController.TitleScreenController == null) ModOptionsMenuController.TitleScreenController = ___owner;
-
-            if (!ModOptionsMenuController.isTitleScreenModMenuCreated) ModOptionsMenuController.CreateTitleScreenModsMenu();
-            ModOptionsMenuController.TitleScreenMenuAddListeners();
+            if (!ModOptionsMenuController.isTitleScreenModMenuCreated) ModOptionsMenuController.CreateTitleScreenModsMenu(___owner);
+            ModOptionsMenuController.ModOptionsButton?.onClick.AddListener(new UnityAction(___owner.ChangeState<ModOptionsMenuState>));
         }
     }
 }

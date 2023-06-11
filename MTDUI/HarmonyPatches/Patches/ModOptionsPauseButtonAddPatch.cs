@@ -12,10 +12,8 @@ namespace MTDUI.HarmonyPatches.Patches
     {
         private static void Postfix(ref GameController ___owner)
         {
-            if (ModOptionsMenuController.GameController == null) ModOptionsMenuController.GameController = ___owner;
-
-            if (!ModOptionsMenuController.isPauseMenuModMenuCreated) ModOptionsMenuController.CreatePauseMenuModsMenu();
-            ModOptionsMenuController.PauseMenuAddListeners();
+            if (!ModOptionsMenuController.isPauseMenuModMenuCreated) ModOptionsMenuController.CreatePauseMenuModsMenu(___owner);
+            ModOptionsMenuController.PauseModOptionsButton?.onClick.AddListener(new UnityAction(___owner.ChangeState<ModOptionsPauseState>));
         }
     }
 }

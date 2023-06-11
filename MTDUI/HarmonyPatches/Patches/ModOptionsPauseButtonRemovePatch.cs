@@ -10,7 +10,7 @@ namespace MTDUI.HarmonyPatches.Patches
     {
         private static void Postfix(PauseState __instance)
         {
-            ModOptionsMenuController.PauseMenuRemoveListeners();
+            ModOptionsMenuController.PauseModOptionsButton?.onClick.RemoveAllListeners();
         }
     }
 }
