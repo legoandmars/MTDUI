@@ -18,9 +18,8 @@ namespace MTDUI.Controllers
 {
     public static class ModOptionsMenuController
     {
-        // things are a bit repetitive here
-        public static List<ModConfigEntry> ConfigEntries { get; } = new List<ModConfigEntry>();
-        public static Dictionary<string, List<ModConfigEntry>> SortedConfigEntries { get; } = new Dictionary<string, List<ModConfigEntry>>();
+        public static Dictionary<string, List<ModConfigEntry>> TitleConfigEntries { get; } = new Dictionary<string, List<ModConfigEntry>>();
+        public static Dictionary<string, List<ModConfigEntry>> PauseConfigEntries { get; } = new Dictionary<string, List<ModConfigEntry>>();
 
         // Mod Option in Title Screen
         public static bool isTitleScreenModMenuCreated
@@ -140,7 +139,8 @@ namespace MTDUI.Controllers
             var modOptionCompList = new List<ModOptionComponent>();
             var modListHasEntries = false;
 
-            foreach (var modConfigEntries in SortedConfigEntries)
+            var configEntries = menuType == OptionsMenuType.MainMenu ? TitleConfigEntries : PauseConfigEntries;
+            foreach (var modConfigEntries in configEntries)
             {
                 var entryName = modConfigEntries.Key;
                 bool isNotEmptyEntry = false;

@@ -56,20 +56,26 @@ namespace MTDUI
         {
             var modConfigEntry = new ModConfigEntry(entry, AcceptableValuesFiller(entry, acceptableValues), location);
 
-            ModOptionsMenuController.ConfigEntries.Add(modConfigEntry);
-
             if (subMenuName == "") subMenuName = Assembly.GetCallingAssembly().GetName().Name;
 
-            var _submenuName = subMenuName;
+            if (location == ConfigEntryLocationType.Everywhere || location == ConfigEntryLocationType.MainOnly)
+                CleanRegister(subMenuName, ModOptionsMenuController.TitleConfigEntries, modConfigEntry);
+            if (location == ConfigEntryLocationType.Everywhere || location == ConfigEntryLocationType.PauseOnly)
+                CleanRegister(subMenuName, ModOptionsMenuController.PauseConfigEntries, modConfigEntry);
+        }
+
+        private static void CleanRegister(string submenuName, Dictionary<string, List<ModConfigEntry>> configEntries, ModConfigEntry modConfigEntry)
+        {
+            var _submenuName = submenuName;
             var isSubmenuFull = false;
             var counter = 1;
             do
             {
-                if (!ModOptionsMenuController.SortedConfigEntries.ContainsKey(_submenuName)) ModOptionsMenuController.SortedConfigEntries.Add(_submenuName, new List<ModConfigEntry>());
-                if (ModOptionsMenuController.SortedConfigEntries[_submenuName].Count >= maxItemInSubmenu)
+                if (!configEntries.ContainsKey(_submenuName)) configEntries.Add(_submenuName, new List<ModConfigEntry>());
+                if (configEntries[_submenuName].Count >= maxItemInSubmenu)
                 {
                     counter++;
-                    _submenuName = subMenuName + " " + counter;
+                    _submenuName = submenuName + " " + counter;
                     isSubmenuFull = true;
                 }
                 else isSubmenuFull = false;
@@ -79,7 +85,7 @@ namespace MTDUI
                 Debug.LogError("Too many registrations with the same name");
                 return;
             }
-            ModOptionsMenuController.SortedConfigEntries[_submenuName].Add(modConfigEntry);
+            configEntries[_submenuName].Add(modConfigEntry);
         }
 
         public static void RegisterOptionInModList<T>(ConfigEntry<T> entry, List<T>? acceptableValues = null)
