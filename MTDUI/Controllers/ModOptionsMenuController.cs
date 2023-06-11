@@ -4,6 +4,7 @@ using flanne;
 using flanne.Core;
 using flanne.TitleScreen;
 using flanne.UI;
+using flanne.UIExtensions;
 using HarmonyLib;
 using MTDUI.Data;
 using MTDUI.UI;
@@ -25,16 +26,16 @@ namespace MTDUI.Controllers
         public static TitleScreenController? TitleScreenController = null;
         public static Button? ModOptionsButton = null;
         public static Button? ModOptionsBackButton = null;
-        public static Panel? ModOptionsPanel = null;
-        public static Panel? ModOptionsSubPanel = null;
         public static Button? ModOptionsSubMenuBackButton = null;
+        public static flanne.UIExtensions.Menu? ModOptionsMenu = null;
+        public static flanne.UIExtensions.Menu? ModOptionsSubmenuMenu = null;
 
         // Mod Option in Pause Menu
         public static GameController? GameController = null;
         public static Button? PauseModOptionsButton = null;
         public static Button? PauseModOptionsBackButton = null;
-        public static Panel? PauseModOptionsPanel = null;
-        public static Panel? PauseModOptionsSubPanel = null;
+        public static flanne.UIExtensions.Panel? PauseModOptionsPanel = null;
+        public static flanne.UIExtensions.Panel? PauseModOptionsSubPanel = null;
         public static Button? PauseModOptionsSubMenuBackButton = null;
 
         public static List<ModOptionComponent> ModOptionComponents = new List<ModOptionComponent>();
@@ -69,7 +70,6 @@ namespace MTDUI.Controllers
             if (menu == OptionsMenuType.PauseMenu) return location == ConfigEntryLocationType.PauseOnly;
             else return location == ConfigEntryLocationType.MainOnly;
         }
-
 
         public static ModOptionComponent? AddButtonFromConfigEntry(ModConfigEntry configEntry, OptionsMenuType menuType, string mod)
         {
@@ -106,14 +106,13 @@ namespace MTDUI.Controllers
             newButton.SetActive(true);
             newButton.GetComponentInChildren<TextLocalizerUI>().enabled = false;
             newButton.GetComponentInChildren<TextMeshProUGUI>().text = mod;
-
         }
 
         public static void CreateModOptionsButton(OptionsMenuType menuType)
         {
             if (menuType == OptionsMenuType.MainMenu ? ModOptionsButton != null : PauseModOptionsButton != null) return;
 
-            var optionsButtonObject = menuType == OptionsMenuType.MainMenu ? TitleScreenController?.optionsButton.gameObject : GameController?.optionsButton.gameObject;
+            var optionsButtonObject = menuType == OptionsMenuType.MainMenu ? TitleScreenController?.mainMenu.transform.GetChild(2).gameObject : GameController?.optionsButton.gameObject;
             if (optionsButtonObject == null) return; // Should never happend
 
             var newButton = Object.Instantiate(optionsButtonObject, optionsButtonObject.transform.parent);
@@ -129,11 +128,99 @@ namespace MTDUI.Controllers
             else PauseModOptionsButton = newButton.GetComponent<Button>();
         }
 
+        private static void SetButtonText(Button? btn, string text)
+        {
+            if (btn != null)
+            {
+                btn.GetComponentInChildren<TextMeshProUGUI>().text = text;
+                // btn.GetComponentInChildren<TextLocalizerUI>().enabled = false;
+            }
+        }
+
+        private static void ClearMenuEntriesList(flanne.UIExtensions.Menu menu, Button? button)
+        {
+            var entries = Traverse.Create(menu).Field("entries");
+            var list = new List<ButtonExtension>();
+            if (button != null) list.Add(button.GetComponent<ButtonExtension>());
+            entries.SetValue(list);
+        }
+
+        private static (flanne.UIExtensions.Menu, Button) CloneAndCleanMenu(GameObject objectMenu)
+        {
+            var newMenuObject = Object.Instantiate(objectMenu, objectMenu.transform.parent);
+            foreach (var button in newMenuObject.GetComponentsInChildren<Button>())
+            {
+                if (button.name != "Back") Object.DestroyImmediate(button.gameObject);
+            }
+            Button backButton = newMenuObject.GetComponentInChildren<Button>();
+            flanne.UIExtensions.Menu menu = newMenuObject.GetComponent<flanne.UIExtensions.Menu>();
+            Object.DestroyImmediate(newMenuObject.GetComponent<OptionsSetter>());
+            ClearMenuEntriesList(menu, backButton);
+            return (menu, backButton);
+        }
+        public static void CreateTitleScreenModsMenu()
+        {
+            if (TitleScreenController == null) return;
+            if (ModOptionsMenu != null) return; // Change that to flag getter
+            var ingameOptionsMenu = TitleScreenController.optionsMenu.gameObject;
+
+            var mainMenu = CloneAndCleanMenu(ingameOptionsMenu);
+            ModOptionsMenu = mainMenu.Item1;
+            ModOptionsBackButton = mainMenu.Item2;
+
+            var subMenu = CloneAndCleanMenu(ingameOptionsMenu);
+            ModOptionsSubmenuMenu = subMenu.Item1;
+            ModOptionsSubMenuBackButton = subMenu.Item2;
+
+            // get all config files so we can make per-mod submenus
+            foreach (var component in ModOptionComponents)
+            {
+                if (component != null)
+                {
+                    component.gameObject.SetActive(false);
+                    Object.Destroy(component);
+                }
+            }
+            ModOptionComponents = new List<ModOptionComponent>();
+            var entryCount = 1;
+            var modListHasEntries = false;
+
+            foreach (var modConfigEntries in SortedConfigEntries)
+            {
+                var name = modConfigEntries.Key;
+                bool hasConfigEntries = false;
+                foreach (var configEntry in modConfigEntries.Value)
+                {
+                    // create button for each entry
+                    var button = AddButtonFromConfigEntry(configEntry, OptionsMenuType.MainMenu, name);
+                    if (button != null) // Prevent button that should not be in pause menu
+                    {
+                        hasConfigEntries = true;
+                        ModOptionComponents.Add(button);
+                        button.gameObject.SetActive(false);
+                    }
+                }
+
+                // submenu back button should always be last
+                ModOptionsSubMenuBackButton.transform.SetAsLastSibling();
+
+                // create buttons for each mod, if necessary, mod list button last
+                if (hasConfigEntries && name != ModOptions.ModListButtonName)
+                {
+                    AddButtonFromModName(OptionsMenuType.MainMenu, name);
+                    entryCount++;
+                }
+                else if (hasConfigEntries && name == ModOptions.ModListButtonName) modListHasEntries = true;
+            }
+
+            if (modListHasEntries) AddButtonFromModName(OptionsMenuType.MainMenu, ModOptions.ModListButtonName);
+            ModOptionsBackButton.transform.SetAsLastSibling();
+        }
         public static void CreateModOptionsPanel(OptionsMenuType menuType)
         {
-            if (menuType == OptionsMenuType.MainMenu ? ModOptionsPanel != null : PauseModOptionsPanel != null) return;
+            if (menuType == OptionsMenuType.MainMenu ? ModOptionsMenu != null : PauseModOptionsPanel != null) return;
 
-            var optionsPanelObject = menuType == OptionsMenuType.MainMenu ? TitleScreenController?.optionsMenuPanel.gameObject : GameController?.optionsMenu.gameObject;
+            var optionsPanelObject = menuType == OptionsMenuType.MainMenu ? TitleScreenController?.optionsMenu.gameObject : GameController?.optionsMenu.gameObject;
             if (optionsPanelObject == null) return; // Should never happend
 
             var newPanel = Object.Instantiate(optionsPanelObject, optionsPanelObject.transform.parent);
@@ -151,13 +238,13 @@ namespace MTDUI.Controllers
 
             Object.DestroyImmediate(newPanel.GetComponent<OptionsSetter>());
 
-            if (menuType == OptionsMenuType.MainMenu) ModOptionsPanel = newPanel.GetComponent<Panel>();
-            else PauseModOptionsPanel = newPanel.GetComponent<Panel>();
+            if (menuType == OptionsMenuType.MainMenu) ModOptionsMenu = newPanel.GetComponent<flanne.UIExtensions.Menu>();
+            else PauseModOptionsPanel = newPanel.GetComponent<flanne.UIExtensions.Panel>();
 
             // make submenu
             var subPanel = Object.Instantiate(newPanel, newPanel.transform.parent);
-            if (menuType == OptionsMenuType.MainMenu) ModOptionsSubPanel = subPanel.GetComponent<Panel>();
-            else PauseModOptionsSubPanel = subPanel.GetComponent<Panel>();
+            if (menuType == OptionsMenuType.MainMenu) ModOptionsSubmenuMenu = subPanel.GetComponent<flanne.UIExtensions.Menu>();
+            else PauseModOptionsSubPanel = subPanel.GetComponent<flanne.UIExtensions.Panel>();
 
             if (menuType == OptionsMenuType.MainMenu) ModOptionsSubMenuBackButton = subPanel.transform.Find("Back").GetComponent<Button>();
             else PauseModOptionsSubMenuBackButton = subPanel.transform.Find("Back").GetComponent<Button>();
