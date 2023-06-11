@@ -15,24 +15,29 @@ namespace MTDUI.Data
 
         public override void Enter()
         {
-            if (rect == null) rect = ModOptionsMenuController.PauseModOptionsSubPanel?.GetComponent<RectTransform>();
-
-            if (rect != null)
+            if (ModOptionsMenuController.PauseModOptionsSubPanel == null || ModOptionsMenuController.PauseModOptionsSubMenuBackButton == null)
             {
-                // rescaling has to be done upon enter due to there being multiple sub menus
-                var entryCount = 1;
-                foreach (var button in ModOptionsMenuController.PauseMenuModOptionComponents)
-                {
-                    button.gameObject.SetActive(button.Mod == CurrentSubmenu);
-                    if (button.Mod == CurrentSubmenu) entryCount++;
-                }
-
-                var currentY = 160;
-                if (entryCount < 6) currentY -= (6 - entryCount) * 24;
-                else if (entryCount > 6) currentY += (entryCount - 6) * 24;
-
-                rect.sizeDelta = new Vector2(300, currentY);
+                Debug.LogError("No panel present");
+                return;
             }
+
+            if (rect == null) rect = ModOptionsMenuController.PauseModOptionsSubPanel.GetComponent<RectTransform>();
+
+            // Rescaling based on number of entry to show
+            var entryCount = 1;
+            foreach (var button in ModOptionsMenuController.PauseMenuModOptionComponents)
+            {
+                button.gameObject.SetActive(button.Mod == CurrentSubmenu);
+                if (button.Mod == CurrentSubmenu) entryCount++;
+            }
+
+            var buttonSize = ModOptionsMenuController.PauseModOptionsSubMenuBackButton.GetComponent<RectTransform>().sizeDelta.y;
+            var verticalPadding = 40;
+            rect.sizeDelta = new Vector2(300, verticalPadding + buttonSize * entryCount);
+
+            var buttonListRect = ModOptionsMenuController.PauseModOptionsSubPanel.transform.GetChild(0).GetComponent<RectTransform>();
+            buttonListRect.position = Vector3.zero;
+            buttonListRect.sizeDelta = new Vector2(100, entryCount * buttonSize);
 
             ModOptionsMenuController.PauseModOptionsSubMenuBackButton?.onClick.AddListener(OnClick);
             ModOptionsMenuController.PauseModOptionsSubPanel?.Show();

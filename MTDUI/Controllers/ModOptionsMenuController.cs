@@ -144,6 +144,7 @@ namespace MTDUI.Controllers
             ClearMenuEntriesList(menu, backButton);
             return (menu, backButton);
         }
+
         private static (flanne.UIExtensions.Menu, Button, flanne.UIExtensions.Menu, Button, List<ModOptionComponent>) CreateGenericModsMenu(GameObject templateMenu, OptionsMenuType menuType)
         {
             var (mainMenu, mainBackButton) = CloneAndCleanMenu(templateMenu);
@@ -203,115 +204,22 @@ namespace MTDUI.Controllers
             PauseModOptionsSubPanel = genericMenuResult.Item3;
             PauseModOptionsSubMenuBackButton = genericMenuResult.Item4;
             PauseMenuModOptionComponents = genericMenuResult.Item5;
+
+            // Resize ingame main pause menu
+            var rect = GameController.pauseMenu.GetComponent<RectTransform>();
+            rect.sizeDelta = rect.sizeDelta + new Vector2(0, PauseModOptionsButton?.GetComponent<RectTransform>().sizeDelta.y ?? 24f);
+
+            // Resize main mods menu
+            var optionsMenuRect = PauseModOptionsPanel.GetComponent<RectTransform>();
+            var entryCount = PauseModOptionsPanel.GetComponentsInChildren<Button>().Length;
+            var buttonSize = PauseModOptionsBackButton.GetComponent<RectTransform>().sizeDelta.y;
+            var verticalPadding = 40;
+            optionsMenuRect.sizeDelta = new Vector2(300, verticalPadding + entryCount * buttonSize);
+
+            // Align buttons in menu
+            var buttonListRect = PauseModOptionsPanel.transform.GetChild(0).GetComponent<RectTransform>();
+            buttonListRect.position = Vector3.zero;
+            buttonListRect.sizeDelta = new Vector2(100, entryCount * buttonSize);
         }
-        /*
-        public static void CreateModOptionsPanel(OptionsMenuType menuType)
-        {
-            if (menuType == OptionsMenuType.MainMenu ? ModOptionsMenu != null : PauseModOptionsPanel != null) return;
-
-            var optionsPanelObject = menuType == OptionsMenuType.MainMenu ? TitleScreenController?.optionsMenu.gameObject : GameController?.optionsMenu.gameObject;
-            if (optionsPanelObject == null) return; // Should never happend
-
-            var newPanel = Object.Instantiate(optionsPanelObject, optionsPanelObject.transform.parent);
-
-            // do a little bit of disabling :)
-            foreach (var button in newPanel.GetComponentsInChildren<Button>())
-            {
-                if (button.name == "Back")
-                {
-                    if (menuType == OptionsMenuType.MainMenu) ModOptionsBackButton = button;
-                    else PauseModOptionsBackButton = button;
-                }
-                else button.gameObject.SetActive(false); // should be destroyed
-            }
-
-            Object.DestroyImmediate(newPanel.GetComponent<OptionsSetter>());
-
-            if (menuType == OptionsMenuType.MainMenu) ModOptionsMenu = newPanel.GetComponent<flanne.UIExtensions.Menu>();
-            else PauseModOptionsPanel = newPanel.GetComponent<flanne.UIExtensions.Panel>();
-
-            // make submenu
-            var subPanel = Object.Instantiate(newPanel, newPanel.transform.parent);
-            if (menuType == OptionsMenuType.MainMenu) ModOptionsSubmenuMenu = subPanel.GetComponent<flanne.UIExtensions.Menu>();
-            else PauseModOptionsSubPanel = subPanel.GetComponent<flanne.UIExtensions.Panel>();
-
-            if (menuType == OptionsMenuType.MainMenu) ModOptionsSubMenuBackButton = subPanel.transform.Find("Back").GetComponent<Button>();
-            else PauseModOptionsSubMenuBackButton = subPanel.transform.Find("Back").GetComponent<Button>();
-
-            // get all config files so we can make per-mod submenus
-
-            foreach (var component in PauseMenuModOptionComponents)
-            {
-                if (component != null)
-                {
-                    component.gameObject.SetActive(false);
-                    Object.Destroy(component);
-                }
-            }
-            PauseMenuModOptionComponents = new List<ModOptionComponent>();
-            var entryCount = 1;
-            var modListHasEntries = false;
-
-            foreach (var modConfigEntries in SortedConfigEntries)
-            {
-                var name = modConfigEntries.Key;
-                bool hasConfigEntries = false;
-                foreach (var configEntry in modConfigEntries.Value)
-                {
-                    // create button for each entry
-                    var button = AddButtonFromConfigEntry(configEntry, menuType, name);
-                    if (button != null) // Prevent button that should not be in pause menu
-                    {
-                        hasConfigEntries = true;
-                        PauseMenuModOptionComponents.Add(button);
-                        button.gameObject.SetActive(false);
-                    }
-                }
-
-
-                // submenu back button should always be last
-                var submenuBackbutton = menuType == OptionsMenuType.MainMenu ? ModOptionsSubMenuBackButton : PauseModOptionsSubMenuBackButton;
-                if (submenuBackbutton != null) submenuBackbutton.transform.SetAsLastSibling(); // back button should always be at the bottom
-
-                // create buttons for each mod, if necessary, mod list button last
-                if (hasConfigEntries && name != ModOptions.ModListButtonName)
-                {
-                    AddButtonFromModName(menuType, name);
-                    entryCount++;
-                }
-                else if (hasConfigEntries && name == ModOptions.ModListButtonName) modListHasEntries = true;
-            }
-
-            // Mod List just before back button
-            if (modListHasEntries)
-            {
-                AddButtonFromModName(menuType, ModOptions.ModListButtonName);
-            }
-
-            var backButton = menuType == OptionsMenuType.MainMenu ? ModOptionsBackButton : PauseModOptionsBackButton;
-            if (backButton != null) backButton.transform.SetAsLastSibling(); // back button should always be at the bottom
-
-            // do some minor panel trickery to make the pause menu not look horrible
-            if (menuType != OptionsMenuType.PauseMenu) return;
-
-            // Here only for Pause Menu
-            var rect = GameController?.pauseMenu.GetComponent<RectTransform>();
-            if (rect != null)
-            {
-                rect.sizeDelta = rect.sizeDelta + new Vector2(0, 24);
-                // rect.localPosition = rect.localPosition + new Vector3(0, -12, 0);
-            }
-
-            var optionsMenuRect = PauseModOptionsPanel?.GetComponent<RectTransform>();
-            if (optionsMenuRect != null)
-            {
-                // assuming 6 options. this could break on future updates. this really should be dynamically checked
-                var currentY = optionsMenuRect.sizeDelta.y;
-
-                currentY += (entryCount - 6) * 24;
-
-                optionsMenuRect.sizeDelta = new Vector2(300, currentY);
-            }
-        }*/
     }
 }
