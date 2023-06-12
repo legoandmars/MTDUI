@@ -44,6 +44,9 @@
     <Reference Include="BepInEx">
       <HintPath>W:\SteamLibrary\steamapps\common\20MinuteTillDawn\BepInEx\core\BepInEx.dll</HintPath>
     </Reference>
+    <Reference Include="com.flanne.extensions">
+      <HintPath>W:\SteamLibrary\steamapps\common\20MinuteTillDawn\MinutesTillDawn_Data\Managed\com.flanne.extensions.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
