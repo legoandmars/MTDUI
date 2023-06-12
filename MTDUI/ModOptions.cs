@@ -22,6 +22,8 @@ namespace MTDUI
     public static class ModOptions
     {
         public static readonly string ModListButtonName = "Mod List";
+        private static readonly int maxItemInSubmenu = 8;
+        private static readonly int maxSubmenusWithSameName = 4;
 
         private static List<object> AcceptableValuesFiller<T>(ConfigEntry<T> entry, List<T>? acceptableValues = null)
         {
@@ -49,19 +51,41 @@ namespace MTDUI
 
             return acceptableValues.Cast<object>().ToList();
         }
-        
+
         public static void Register<T>(ConfigEntry<T> entry, List<T>? acceptableValues = null, ConfigEntryLocationType location = ConfigEntryLocationType.Everywhere, string subMenuName = "")
         {
             var modConfigEntry = new ModConfigEntry(entry, AcceptableValuesFiller(entry, acceptableValues), location);
 
-            ModOptionsMenuController.ConfigEntries.Add(modConfigEntry);
+            if (subMenuName == "") subMenuName = Assembly.GetCallingAssembly().GetName().Name;
 
-            if (subMenuName == "") subMenuName= Assembly.GetCallingAssembly().GetName().Name;
+            if (location == ConfigEntryLocationType.Everywhere || location == ConfigEntryLocationType.MainOnly)
+                CleanRegister(subMenuName, ModOptionsMenuController.TitleConfigEntries, modConfigEntry);
+            if (location == ConfigEntryLocationType.Everywhere || location == ConfigEntryLocationType.PauseOnly)
+                CleanRegister(subMenuName, ModOptionsMenuController.PauseConfigEntries, modConfigEntry);
+        }
 
-            // TODO: add fallback for registering more than 9 config under the same submenuname (smtg like submenuname 2) automatically
-            // Else the back button is not accessible
-            if (!ModOptionsMenuController.SortedConfigEntries.ContainsKey(subMenuName)) ModOptionsMenuController.SortedConfigEntries.Add(subMenuName, new List<ModConfigEntry>());
-            ModOptionsMenuController.SortedConfigEntries[subMenuName].Add(modConfigEntry);
+        private static void CleanRegister(string submenuName, Dictionary<string, List<ModConfigEntry>> configEntries, ModConfigEntry modConfigEntry)
+        {
+            var _submenuName = submenuName;
+            var isSubmenuFull = false;
+            var counter = 1;
+            do
+            {
+                if (!configEntries.ContainsKey(_submenuName)) configEntries.Add(_submenuName, new List<ModConfigEntry>());
+                if (configEntries[_submenuName].Count >= maxItemInSubmenu)
+                {
+                    counter++;
+                    _submenuName = submenuName + " " + counter;
+                    isSubmenuFull = true;
+                }
+                else isSubmenuFull = false;
+            } while (isSubmenuFull || counter >= maxSubmenusWithSameName);
+            if (isSubmenuFull)
+            {
+                Debug.LogError("Too many registrations with the same name");
+                return;
+            }
+            configEntries[_submenuName].Add(modConfigEntry);
         }
 
         public static void RegisterOptionInModList<T>(ConfigEntry<T> entry, List<T>? acceptableValues = null)

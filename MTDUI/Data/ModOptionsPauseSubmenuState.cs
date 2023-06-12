@@ -4,44 +4,45 @@ using UnityEngine;
 
 namespace MTDUI.Data
 {
-	public class ModOptionsPauseSubmenuState : GameState
-	{
-		public static string CurrentSubmenu = "";
-		private static RectTransform? rect;
-		public void OnClick()
-		{
-			owner.ChangeState<ModOptionsPauseState>();
-		}
+    public class ModOptionsPauseSubmenuState : GameState
+    {
+        public static string CurrentSubmenu = "";
+        private static RectTransform? rect;
 
-		public override void Enter()
-		{
-			if (rect == null) rect = ModOptionsMenuController.PauseModOptionsSubPanel?.GetComponent<RectTransform>();
+        public override void Enter()
+        {
+            if (ModOptionsMenuController.PauseSubmenu == null || ModOptionsMenuController.PauseSubmenuBackButton == null)
+            {
+                Debug.LogError("No panel present");
+                return;
+            }
 
-			if (rect != null)
-			{
-				// rescaling has to be done upon enter due to there being multiple sub menus
-				var entryCount = 1;
-				foreach (var button in ModOptionsMenuController.ModOptionComponents)
-				{
-					button.gameObject.SetActive(button.Mod == CurrentSubmenu);
-					if (button.Mod == CurrentSubmenu) entryCount++;
-				}
+            if (rect == null) rect = ModOptionsMenuController.PauseSubmenu.GetComponent<RectTransform>();
 
-				var currentY = 160;
-				if (entryCount < 6) currentY -= (6 - entryCount) * 24;
-				else if (entryCount > 6) currentY += (entryCount - 6) * 24;
+            // Rescaling based on number of entry to show
+            var entryCount = 1;
+            foreach (var button in ModOptionsMenuController.PauseMenuModOptionComponents)
+            {
+                button.gameObject.SetActive(button.Mod == CurrentSubmenu);
+                if (button.Mod == CurrentSubmenu) entryCount++;
+            }
 
-				rect.sizeDelta = new Vector2(300, currentY);
-			}
+            var buttonSize = ModOptionsMenuController.PauseSubmenuBackButton.GetComponent<RectTransform>().sizeDelta.y;
+            var verticalPadding = 40;
+            rect.sizeDelta = new Vector2(300, verticalPadding + buttonSize * entryCount);
 
-			ModOptionsMenuController.PauseModOptionsSubMenuBackButton?.onClick.AddListener(OnClick);
-			ModOptionsMenuController.PauseModOptionsSubPanel?.Show();
-		}
+            var buttonListRect = ModOptionsMenuController.PauseSubmenu.transform.GetChild(0).GetComponent<RectTransform>();
+            buttonListRect.position = Vector3.zero;
+            buttonListRect.sizeDelta = new Vector2(100, entryCount * buttonSize);
 
-		public override void Exit()
-		{
-			ModOptionsMenuController.PauseModOptionsSubMenuBackButton?.onClick.RemoveListener(OnClick);
-			ModOptionsMenuController.PauseModOptionsSubPanel?.Hide();
-		}
-	}
+            ModOptionsMenuController.PauseSubmenuBackButton?.onClick.AddListener(owner.ChangeState<ModOptionsPauseState>);
+            ModOptionsMenuController.PauseSubmenu?.Show();
+        }
+
+        public override void Exit()
+        {
+            ModOptionsMenuController.PauseSubmenuBackButton?.onClick.RemoveAllListeners();
+            ModOptionsMenuController.PauseSubmenu?.Hide();
+        }
+    }
 }
